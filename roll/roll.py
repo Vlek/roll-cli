@@ -83,11 +83,15 @@ expression_grammar = parsley.makeGrammar("""
 """, {"calculate": calculate})
 
 
+def roll(expression='') -> str:
+    return expression_grammar(expression).expr()
+
+
 @click.command()
 @click.argument('expression', nargs=-1, type=str)
 @click.option('-v', '--verbose', 'verbose', is_flag=True,
               help='Print the individual die roll values')
-def roll(expression: [str], verbose: bool) -> None:
+def roll_cli(expression: [str], verbose: bool) -> None:
     """
     A cli command for rolling dice and adding modifiers in the
     same fashion as the node.js version on npm.
@@ -111,11 +115,16 @@ def roll(expression: [str], verbose: bool) -> None:
         (1d4)d6             - Rolls 1d4 d6 die
     """
 
+    # TODO: Add tests
+    # TODO: Excise roll function from click, make all output be returned
     # TODO: Handle negative numbers
+    # TODO: Handle exponentiation
+    # TODO: Handle partial die (0.5d20 == 1d20, 1d0.5 == 1d1)
+    # TODO: Consider hierarchical design, add dice to a standard calculator
 
     command_input = ' '.join(expression)
 
-    input_had_bad_chars = len(command_input.strip("0123456789d\-/*() %+")) > 0
+    input_had_bad_chars = len(command_input.strip("0123456789d-/*() %+")) > 0
 
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')
@@ -130,4 +139,4 @@ def roll(expression: [str], verbose: bool) -> None:
 
 
 if __name__ == '__main__':
-    roll()
+    roll_cli()
