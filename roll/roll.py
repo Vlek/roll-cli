@@ -24,6 +24,8 @@ def calculate(start, pairs):
     result = start
     global _print_debug_output
 
+    # print(f'Start: {start}, pairs: {pairs}')
+
     for op, value in pairs:
         if op == '+':
             result += value
@@ -47,7 +49,11 @@ def calculate(start, pairs):
             # instead of a value.
             start = start if type(start) == int else 1
 
-            rolls = [randint(1, value) for _ in range(start)]
+            rolls = [
+                randint(1, value) if value != 0
+                else 0 for _ in range(start)
+            ]
+
             rolls_total = sum(rolls)
 
             if _print_debug_output:
@@ -58,11 +64,17 @@ def calculate(start, pairs):
 
             result += rolls_total
 
+            # When it's the case that there are multiple rolls in a row,
+            # we have to set the start value to the roll total for it to
+            # propagate to the next roll otherwise it completely brushes
+            # off the value that we rolled and moves on.
+            start = rolls_total
+
     return result
 
 
 expression_grammar = parsley.makeGrammar("""
-    number = <digit+>:ds -> int(ds)
+    number = ws <digit+>:ds ws -> int(ds)
     parens = '(' ws expr:e ws ')' -> e
     value = number | parens
 
@@ -84,6 +96,15 @@ expression_grammar = parsley.makeGrammar("""
 
 
 def roll(expression='') -> str:
+
+    input_had_bad_chars = len(expression.strip("0123456789d-/*() %+")) > 0
+
+    if input_had_bad_chars:
+        raise Exception('Input contained invalid characters.')
+
+    if expression == '':
+        command_input = "1d20"
+
     return expression_grammar(expression).expr()
 
 
@@ -115,27 +136,22 @@ def roll_cli(expression: [str], verbose: bool) -> None:
         (1d4)d6             - Rolls 1d4 d6 die
     """
 
-    # TODO: Add tests
-    # TODO: Excise roll function from click, make all output be returned
+    # TODO: Make all output be returned
     # TODO: Handle negative numbers
+    #   -1d20 == 1d20 * -1
+    #   1d-20 == Exception, that doesn't make sense.
     # TODO: Handle exponentiation
-    # TODO: Handle partial die (0.5d20 == 1d20, 1d0.5 == 1d1)
-    # TODO: Consider hierarchical design, add dice to a standard calculator
+    # TODO: Add factorials
+    # TODO: Add modulus division
+    # TODO: Handle partial die (0.5d20 == 1d20, 1d2.5 == 1d3)
+    #   The fractional faces are weighted based on the fraction
 
     command_input = ' '.join(expression)
-
-    input_had_bad_chars = len(command_input.strip("0123456789d-/*() %+")) > 0
-
-    if input_had_bad_chars:
-        raise Exception('Input contained invalid characters.')
-
-    if command_input == '':
-        command_input = "1d20"
 
     global _print_debug_output
     _print_debug_output = verbose
 
-    click.echo(expression_grammar(command_input).expr())
+    click.echo(roll(command_input))
 
 
 if __name__ == '__main__':

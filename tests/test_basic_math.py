@@ -2,10 +2,6 @@
 from roll import roll
 
 
-def test_interpret_number():
-    assert roll('42') == 42
-
-
 def test_addition1():
     assert roll('2 + 2') == 4
 
@@ -64,3 +60,31 @@ def test_division3():
 
 def test_division4():
     assert roll('54 / 9') == 6
+
+
+def test_add_mul():
+    assert roll('1 + 2 * 3') == 7
+
+
+def test_mul_add():
+    assert roll('3 * 2 + 1') == 7
+
+
+def test_sub_div():
+    assert roll('10 - 5 / 5') == 9
+
+
+def test_div_sub():
+    assert roll('15 / 3 - 2') == 3
+
+
+def test_sub_mul_add_mul_sub():
+    assert roll('40 - 3 * 7 + 2 * 9 - 20') == 17
+
+
+def test_parens1():
+    assert roll('(4 + 2) * 3') == 18
+
+
+def test_parens2():
+    assert roll('3 * (10 - 5)') == 15

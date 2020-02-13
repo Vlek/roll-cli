@@ -10,6 +10,7 @@ setup(
             'roll = roll:roll'
         ]
     },
+    test_suite='tests',
     url='https://github.com/vlek/roll',
     license='MIT',
     author='Derek (Vlek) McCammond',
