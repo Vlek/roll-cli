@@ -138,3 +138,4 @@ dmypy.json
 
 # I also hate visual studio
 .vs/
+.Rproj.user
