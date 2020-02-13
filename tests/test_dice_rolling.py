@@ -51,3 +51,8 @@ def test_d100():
 
 def test_d_percentage():
     assert roll('d%') in range(1, 101)
+
+
+def test_no_sides_given():
+    with pytest.raises(Exception):
+        roll('1d')
