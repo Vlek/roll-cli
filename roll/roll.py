@@ -24,9 +24,22 @@ def calculate(start, pairs):
     result = start
     global _print_debug_output
 
-    # print(f'Start: {start}, pairs: {pairs}')
+    print(f'Start: {start}, pairs: {pairs}')
 
     for op, value in pairs:
+
+        # This is for the case where it's like "6 +" without a right-hand side:
+        if type(value) == bool:
+            raise Exception('An operation was missing a right-hand side')
+
+        # This is for the missing left-hand side:
+        if type(start) == bool:
+
+            # If it's not a dice, then that's a problem.
+            if op != 'd':
+                raise Exception("An operation was missing a left-hand side")
+            start = 1
+
         if op == '+':
             result += value
         elif op == '-':
@@ -36,6 +49,13 @@ def calculate(start, pairs):
         elif op == '/':
             result /= value
         elif op == 'd':
+
+            # If it's the case that we were given a dice with negative sides,
+            # then that doesn't mean anything in the real world. I cannot
+            # for the life of me figure out a possible scenario where that
+            # would make sense. We will just error out.
+            if 0 > value:
+                raise Exception('The sides of a die must be positive or zero.')
 
             # In the the case that we're rolling dice, the starting
             # number indicates the number of dice that we're rolling, not
@@ -103,7 +123,7 @@ def roll(expression='') -> str:
         raise Exception('Input contained invalid characters.')
 
     if expression == '':
-        command_input = "1d20"
+        expression = "1d20"
 
     return expression_grammar(expression).expr()
 

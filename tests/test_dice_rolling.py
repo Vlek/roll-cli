@@ -4,7 +4,9 @@ from roll import roll
 
 
 def test_basic_roll():
-    assert roll() in range(1, 21)
+    result = roll()
+    assert type(result) == int
+    assert result in range(1, 21)
 
 
 def test_zero_dice_roll():
@@ -20,7 +22,9 @@ def test_d20():
 
 
 def test_1d20():
-    assert roll('1d20') in range(1, 21)
+    result = roll('1d20')
+    assert type(result) == int
+    assert result in range(1, 21)
 
 
 def test_neg1d20():
@@ -56,3 +60,8 @@ def test_d_percentage():
 def test_no_sides_given():
     with pytest.raises(Exception):
         roll('1d')
+
+
+def test_no_sides_given_with_parens():
+    with pytest.raises(Exception):
+        roll('2d()')
