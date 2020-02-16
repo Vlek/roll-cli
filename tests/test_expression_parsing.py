@@ -15,6 +15,23 @@ def test_interpret_number_with_spaces():
     assert roll('       239      ') == 239
 
 
+def test_float1():
+    assert roll('1.0') == 1.0
+
+
+def test_float2():
+    assert roll('3.1415') == 3.1415
+
+
+def test_neg_float1():
+    assert roll('-2.0') == -2.0
+
+
+def test_bad_float1():
+    with pytest.raises(Exception):
+        roll('9.')
+
+
 def test_interpret_dice():
     assert roll('d20') in range(1, 21)
 

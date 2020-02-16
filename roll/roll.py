@@ -14,8 +14,10 @@ etc.
 """
 
 import click
+import math
 import parsley
 from random import randint
+from typing import List
 
 _print_debug_output = False
 
@@ -24,7 +26,7 @@ def calculate(start, pairs):
     result = start
     global _print_debug_output
 
-    print(f'Start: {start}, pairs: {pairs}')
+    # print(f'Start: {start}, pairs: {pairs}')
 
     for op, value in pairs:
 
@@ -57,46 +59,59 @@ def calculate(start, pairs):
             if 0 > value:
                 raise Exception('The sides of a die must be positive or zero.')
 
-            # In the the case that we're rolling dice, the starting
-            # number indicates the number of dice that we're rolling, not
-            # the initial value that we're starting with.
-            result = 0
+            result_type = type(result)
+
+            if result_type == float:
+                value *= result
 
             # When we use a dice expression without explicitly expressing
             # how many to roll, we want to specifically state that it's
             # supposed to be a 1. It's for some reason returning a boolean
             # true when it finds the whitespace or nothing character first
             # instead of a value.
-            start = start if type(start) == int else 1
+            #
+            # This is also the case when we have a floating point number
+            # as the number of dice that we will roll. 0.5d20 == 1d10, so,
+            # after we've changed the value, we need to reset the start.
+            if result_type in [bool, float]:
+                result = 1
+
+            result_is_negative = 0 > result
+
+            if result_is_negative:
+                result = abs(result)
+
+            value = math.ceil(value)
 
             rolls = [
-                randint(1, value) if value != 0
-                else 0 for _ in range(start)
+                randint(1, value) if value != 0 else 0 for _ in range(result)
             ]
 
             rolls_total = sum(rolls)
 
+            if result_is_negative:
+                rolls_total *= -1
+
             if _print_debug_output:
                 click.echo(
-                    f"{start}d{value}: {rolls_total} " +
-                    (f"{rolls}" if len(rolls) > 1 else '')
+                    f'{"-" if result_is_negative else ""}{start}d{value}: ' +
+                    f'{rolls_total}' +
+                    (f' {rolls}' if len(rolls) > 1 else '')
                 )
 
-            result += rolls_total
-
-            # When it's the case that there are multiple rolls in a row,
-            # we have to set the start value to the roll total for it to
-            # propagate to the next roll otherwise it completely brushes
-            # off the value that we rolled and moves on.
-            start = rolls_total
+            result = rolls_total
 
     return result
 
 
-expression_grammar = parsley.makeGrammar("""
+expression_grammar = parsley.makeGrammar(
+    """
     number = ws <digit+>:ds ws -> int(ds)
+    neg_number = '-' number:n -> n * -1
+    float = <number '.' number>:f -> float(f)
+    neg_float = <neg_number '.' number>:nf -> float(nf)
     parens = '(' ws expr:e ws ')' -> e
-    value = number | parens
+    value = neg_float | float | neg_number | number | parens
 
     add = '+' ws expr2:n -> ('+', n)
     sub = '-' ws expr2:n -> ('-', n)
@@ -112,12 +127,14 @@ expression_grammar = parsley.makeGrammar("""
     expr = expr2:left add_sub*:right -> calculate(left, right)
     expr2 = expr3:left mul_div*:right -> calculate(left, right)
     expr3 = (value|ws):left dice*:right -> calculate(left, right)
-""", {"calculate": calculate})
+    """,
+    {"calculate": calculate}
+)
 
 
 def roll(expression='') -> str:
 
-    input_had_bad_chars = len(expression.strip("0123456789d-/*() %+")) > 0
+    input_had_bad_chars = len(expression.strip("0123456789d-/*() %+.")) > 0
 
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')
@@ -132,7 +149,7 @@ def roll(expression='') -> str:
 @click.argument('expression', nargs=-1, type=str)
 @click.option('-v', '--verbose', 'verbose', is_flag=True,
               help='Print the individual die roll values')
-def roll_cli(expression: [str], verbose: bool) -> None:
+def roll_cli(expression: List[str], verbose: bool) -> None:
     """
     A cli command for rolling dice and adding modifiers in the
     same fashion as the node.js version on npm.
@@ -176,3 +193,4 @@ def roll_cli(expression: [str], verbose: bool) -> None:
 
 if __name__ == '__main__':
     roll_cli()
+

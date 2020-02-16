@@ -1,4 +1,5 @@
 
+import pytest
 from roll import roll
 
 
@@ -12,6 +13,23 @@ def test_addition2():
 
 def test_addition3():
     assert roll('1 + 10 + 100 + 1000') == 1111
+
+
+def test_addition_without_spaces1():
+    assert roll('8+16') == 24
+
+
+def test_addition_without_spaces2():
+    assert roll('5+17+202+81') == 305
+
+
+def test_addition_with_uneven_spaces1():
+    assert roll('19     +    57') == 76
+
+
+def test_addition_with_uneven_spaces2():
+    with pytest.raises(Exception):
+        roll('321\t\n  + \t\t\t   \t 18')
 
 
 def test_subtraction1():

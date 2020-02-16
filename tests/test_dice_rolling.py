@@ -41,6 +41,10 @@ def test_neg1d_neg20():
         roll('-1d-20')
 
 
+def test_float_roll1():
+    assert roll('0.5d20') in range(1, 10)
+
+
 def test_3d6():
     assert roll('3d6') in range(3, 19)
 
@@ -65,3 +69,20 @@ def test_no_sides_given():
 def test_no_sides_given_with_parens():
     with pytest.raises(Exception):
         roll('2d()')
+
+
+def test_float_num_dice():
+    assert roll('0.5d20') in range(1, 11)
+
+
+def test_float_num_dice2():
+    assert roll('0.25d100') in range(1, 26)
+
+
+def test_float_sides1():
+    assert roll('d2.5') in range(1, 4)
+
+
+def test_float_sides2():
+    assert roll('2d19.99') in range(2, 41)
+

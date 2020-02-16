@@ -20,3 +20,8 @@ def test_1d4_add_div():
 
 def test_2d8_parens_add_mult():
     assert roll('(2d8 + 8) * 4') in range(40, 97)
+
+
+def test_d6_mul_4():
+    assert roll('d6 * 4') in range(4, 25)
+
