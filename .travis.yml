@@ -5,8 +5,7 @@ python: 3.6
 install: pip install -e .[tests]
 
 script:
-  - pytest
-  - coverage xml
+  - pytest --cov=tests
 
 after_success:
   - codecov

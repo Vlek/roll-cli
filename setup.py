@@ -12,6 +12,7 @@ setup(
     extras_require={
         'tests': [
             'pytest>=5.3.5',
+            'pytest-cov',
             'coverage',
             'codecov'
         ]
