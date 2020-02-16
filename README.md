@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/Vlek/roll.svg?branch=master)](https://travis-ci.org/Vlek/roll)
+[![Coverage Status](https://coveralls.io/repos/github/Vlek/roll/badge.svg?branch=master)](https://coveralls.io/github/Vlek/roll?branch=master)
+
 # Roll
 
 Dice roller CLI Script
