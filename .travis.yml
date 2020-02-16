@@ -4,4 +4,9 @@ python: 3.6
 
 install: pip install -e .[tests]
 
-script: pytest
+script:
+  - pytest
+  - coverage xml
+
+after_success:
+  - codecov

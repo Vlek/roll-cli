@@ -11,7 +11,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=[
         'pytest>=5.3.5',
-        'python-coveralls>=2.9.3'
+        'codecov'
     ],
     entry_points={
         'console_scripts': [

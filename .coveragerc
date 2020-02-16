@@ -1,9 +1,9 @@
-language: python
 
-python: 3.6
+# Coverage config file
 
-install: pip install -e .
+[report]
+    exclude_lines =
+        pragma: no cover
 
-script: pytest --cov-report= --cov=tests
-
-after_success: coveralls
+[html]
+directory = htmlcov
