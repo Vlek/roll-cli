@@ -9,10 +9,12 @@ setup(
         'parsley>=1.3'
     ],
     setup_requires=['pytest-runner'],
-    tests_require=[
-        'pytest>=5.3.5',
-        'codecov'
-    ],
+    extras_require={
+        'tests': [
+            'pytest>=5.3.5',
+            'codecov'
+        ]
+    },
     entry_points={
         'console_scripts': [
             'roll = roll.roll:roll_cli'
