@@ -5,5 +5,5 @@
     exclude_lines =
         pragma: no cover
 
-[html]
-directory = htmlcov
+[xml]
+output = coverage.xml
