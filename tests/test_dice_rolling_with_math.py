@@ -24,4 +24,3 @@ def test_2d8_parens_add_mult():
 
 def test_d6_mul_4():
     assert roll('d6 * 4') in range(4, 25)
-

@@ -52,4 +52,3 @@ def test_inception_dice_with_parens2():
 
 def test_inception_dice_with_parens3():
     assert roll('4d(10d7d8)') in range(10, 2241)
-

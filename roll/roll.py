@@ -29,7 +29,7 @@ def handle_factorial(num: int) -> int:
     # went over this and a lot of them just hurt my head.
     #
     # From what I understood of what people were saying, a negative
-    # factorial can make sense but pepole tend not to care because
+    # factorial can make sense but people tend not to care because
     # the only function that is able to meet certain criteria is
     # the gamma function which are all positive numbers.
     #
@@ -219,4 +219,3 @@ def roll_cli(expression: List[str], verbose: bool) -> None:
 
 if __name__ == '__main__':
     roll_cli()
-

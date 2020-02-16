@@ -2,12 +2,20 @@ from setuptools import setup
 
 setup(
     name='roll',
-    version='0.1.0',
+    version='0.3.0',
     packages=['roll'],
-    install_requires=['parsley>=1.3', 'click>=7.0', 'pytest>=5.3.5'],
+    install_requires=[
+        'click>=7.0',
+        'parsley>=1.3'
+    ],
+    setup_requires=['pytest-runner'],
+    tests_require=[
+        'pytest>=5.3.5',
+        'python-coveralls>=2.9.3'
+    ],
     entry_points={
         'console_scripts': [
-            'roll = roll:roll'
+            'roll = roll.roll:roll_cli'
         ]
     },
     test_suite='tests',

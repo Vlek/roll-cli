@@ -85,4 +85,3 @@ def test_float_sides1():
 
 def test_float_sides2():
     assert roll('2d19.99') in range(2, 41)
-

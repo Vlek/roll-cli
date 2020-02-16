@@ -134,4 +134,3 @@ def test_exponential1():
 
 def test_exponential2():
     assert roll('7 ** 5') == 16807
-
