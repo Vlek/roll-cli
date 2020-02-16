@@ -14,12 +14,39 @@ etc.
 """
 
 import click
+import functools
 import math
 import parsley
 from random import randint
 from typing import List
 
 _print_debug_output = False
+
+
+def handle_factorial(num: int) -> int:
+
+    # Look, there were a large number of stackoverflow threads that
+    # went over this and a lot of them just hurt my head.
+    #
+    # From what I understood of what people were saying, a negative
+    # factorial can make sense but pepole tend not to care because
+    # the only function that is able to meet certain criteria is
+    # the gamma function which are all positive numbers.
+    #
+    # For what we're doing, this is way, way overkill and far more of
+    # a long-winded math problem than I ever dared dream of. Let's just
+    # call this an exception.
+    if 0 > num:
+        raise Exception(
+            "Factorials must be positive or zero. Dont' @ me.")
+
+    if num == 0:
+        return 1
+
+    return functools.reduce(
+        lambda x, y: x * y,
+        [i for i in range(1, num + 1)]
+    )
 
 
 def calculate(start, pairs):
@@ -50,6 +77,10 @@ def calculate(start, pairs):
             result *= value
         elif op == '/':
             result /= value
+        elif op == '%':
+            result %= value
+        elif op == '**':
+            result **= value
         elif op == 'd':
 
             # If it's the case that we were given a dice with negative sides,
@@ -110,31 +141,34 @@ expression_grammar = parsley.makeGrammar(
     neg_number = '-' number:n -> n * -1
     float = <number '.' number>:f -> float(f)
     neg_float = <neg_number '.' number>:nf -> float(nf)
+    factorial = (number | neg_number):n '!' -> handle_factorial(n)
     parens = '(' ws expr:e ws ')' -> e
-    value = neg_float | float | neg_number | number | parens
+    value = neg_float | float | factorial | neg_number | number | parens
 
     add = '+' ws expr2:n -> ('+', n)
     sub = '-' ws expr2:n -> ('-', n)
     mul = '*' ws expr3:n -> ('*', n)
     div = '/' ws expr3:n -> ('/', n)
+    mod = '%' ws expr3:n -> ('%', n)
+    exp = '**' ws value:n -> ('**', n)
     percentage_die = 'd' ws '%' -> ('d', 100)
     die = 'd' ws value:n -> ('d', n)
 
     add_sub = ws (add | sub)
-    mul_div = ws (mul | div)
-    dice = ws (die | percentage_die)
+    mul_div = ws (mod | mul | div)
+    exp_dice = ws (exp | die | percentage_die)
 
     expr = expr2:left add_sub*:right -> calculate(left, right)
     expr2 = expr3:left mul_div*:right -> calculate(left, right)
-    expr3 = (value|ws):left dice*:right -> calculate(left, right)
+    expr3 = (value|ws):left exp_dice*:right -> calculate(left, right)
     """,
-    {"calculate": calculate}
+    {"calculate": calculate, 'handle_factorial': handle_factorial}
 )
 
 
 def roll(expression='') -> str:
 
-    input_had_bad_chars = len(expression.strip("0123456789d-/*() %+.")) > 0
+    input_had_bad_chars = len(expression.strip("0123456789d-/*() %+.!")) > 0
 
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')
@@ -174,14 +208,6 @@ def roll_cli(expression: List[str], verbose: bool) -> None:
     """
 
     # TODO: Make all output be returned
-    # TODO: Handle negative numbers
-    #   -1d20 == 1d20 * -1
-    #   1d-20 == Exception, that doesn't make sense.
-    # TODO: Handle exponentiation
-    # TODO: Add factorials
-    # TODO: Add modulus division
-    # TODO: Handle partial die (0.5d20 == 1d20, 1d2.5 == 1d3)
-    #   The fractional faces are weighted based on the fraction
 
     command_input = ' '.join(expression)
 

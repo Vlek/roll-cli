@@ -42,7 +42,7 @@ def test_neg1d_neg20():
 
 
 def test_float_roll1():
-    assert roll('0.5d20') in range(1, 10)
+    assert roll('0.5d20') in range(1, 11)
 
 
 def test_3d6():

@@ -106,3 +106,32 @@ def test_parens1():
 
 def test_parens2():
     assert roll('3 * (10 - 5)') == 15
+
+
+def test_modulus1():
+    assert roll('5 % 2') == 1
+
+
+def test_modulus2():
+    assert roll('23 % 13') == 10
+
+
+def test_modulus3():
+    assert roll('19 % 12') == 7
+
+
+def test_modulus4():
+    assert roll('1 % 112') == 1
+
+
+def test_modulus5():
+    assert roll('66 % 11') == 0
+
+
+def test_exponential1():
+    assert roll('6 ** 3') == 216
+
+
+def test_exponential2():
+    assert roll('7 ** 5') == 16807
+
