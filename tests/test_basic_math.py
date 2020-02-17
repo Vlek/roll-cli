@@ -134,3 +134,16 @@ def test_exponential1():
 
 def test_exponential2():
     assert roll('7 ** 5') == 16807
+
+
+def test_factorial1():
+    assert roll('5!') == 120
+
+
+def test_factorial2():
+    assert roll('0!') == 1
+
+
+def test_bad_factorial1():
+    with pytest.raises(Exception):
+        roll('-256!')

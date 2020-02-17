@@ -2,27 +2,27 @@
 from roll import roll
 
 
-def mul_b4_add1():
+def test_mul_b4_add1():
     assert roll('2+6*4') == 26
 
 
-def mul_b4_add2():
+def test_mul_b4_add2():
     assert roll('5+4*2+9') == 22
 
 
-def mul_b4_add3():
+def test_mul_b4_add3():
     assert roll('1+2*3+4*5+6') == 33
 
 
-def mul_b4_add4():
+def test_mul_b4_add4():
     assert roll('7 * 4+ 2 + 8') == 38
 
 
-def mul_b4_add5():
+def test_mul_b4_add5():
     assert roll('9 + 4 + 42 + 7 * 4') == 83
 
 
-def div_b4_sub1():
+def test_div_b4_sub1():
     assert roll('100 - 21 / 7') == 97
 
 

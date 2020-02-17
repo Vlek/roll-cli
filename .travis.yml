@@ -1,11 +1,12 @@
 language: python
 
-python: 3.6
+python:
+  - 3.6
+  - 3.7
+  - 3.8
 
 install: pip install -e .[tests]
 
-script:
-  - pytest --cov=tests
+script: coverage run --source roll -m pytest
 
-after_success:
-  - codecov
+after_success: codecov
