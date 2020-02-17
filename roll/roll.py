@@ -173,7 +173,7 @@ def roll(expression='') -> str:
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')
 
-    if expression == '':
+    if expression.strip() == '':
         expression = "1d20"
 
     return expression_grammar(expression).expr()
