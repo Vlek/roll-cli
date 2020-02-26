@@ -24,3 +24,7 @@ def test_2d8_parens_add_mult():
 
 def test_d6_mul_4():
     assert roll('d6 * 4') in range(4, 25)
+
+
+def test_dice_expo():
+    assert roll('1**5d3') in range(1, 4)

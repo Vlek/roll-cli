@@ -147,3 +147,12 @@ def test_factorial2():
 def test_bad_factorial1():
     with pytest.raises(Exception):
         roll('-256!')
+
+
+def test_bad_parens():
+    with pytest.raises(Exception):
+        roll('((')
+
+
+def test_add_explonential():
+    roll("3 + 7**3") == 346

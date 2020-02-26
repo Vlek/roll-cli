@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Dice roller CLI Script
@@ -124,11 +124,14 @@ def calculate(start, pairs):
                 rolls_total *= -1
 
             if _print_debug_output:
-                click.echo(
-                    f'{"-" if result_is_negative else ""}{start}d{value}: ' +
-                    f'{rolls_total}' +
-                    (f' {rolls}' if len(rolls) > 1 else '')
-                )
+
+                debug_message = [
+                    f'{"-" if result_is_negative else ""}{start}d{value}:',
+                    f'{rolls_total}',
+                    (f'{rolls}' if len(rolls) > 1 else '')
+                ]
+
+                click.echo(' '.join(debug_message))
 
             result = rolls_total
 
