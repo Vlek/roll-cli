@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='roll',
-    version='0.3.0',
+    version='1.0.0',
     packages=['roll'],
     install_requires=[
         'click>=7.0',
