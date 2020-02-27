@@ -62,3 +62,38 @@ def test_bad_input3():
 def test_bad_input4():
     with pytest.raises(Exception):
         roll('+ 6')
+
+
+def test_bad_input5():
+    with pytest.raises(Exception):
+        roll('(6**)2')
+
+
+def test_bad_input6():
+    with pytest.raises(Exception):
+        roll('d')
+
+
+def test_bad_input7():
+    with pytest.raises(Exception):
+        roll('+')
+
+
+def test_bad_input8():
+    with pytest.raises(Exception):
+        roll('*')
+
+
+def test_bad_input9():
+    with pytest.raises(Exception):
+        roll('-')
+
+
+def test_bad_input10():
+    with pytest.raises(Exception):
+        roll('/')
+
+
+def test_bad_input11():
+    with pytest.raises(Exception):
+        roll('%')

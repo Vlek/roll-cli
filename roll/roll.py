@@ -129,15 +129,16 @@ expression_grammar = parsley.makeGrammar(
     mod = '%' ws expr3:n -> ('%', n)
     exp = '**' ws value:n -> ('**', n)
     percentage_die = 'd' ws '%' -> ('d', 100)
-    die = 'd' ws value:n -> ('d', n)
+    die = 'd' ws expr4:n -> ('d', n)
 
     add_sub = ws (add | sub)
     mul_div = ws (mod | mul | div)
-    exp_dice = ws (exp | die | percentage_die)
+    dice = ws (percentage_die | die)
 
     expr = expr2:left add_sub*:right -> calculate(left, right)
     expr2 = expr3:left mul_div*:right -> calculate(left, right)
-    expr3 = (value|ws):left exp_dice*:right -> calculate(left, right)
+    expr3 =  expr4:left dice*:right -> calculate(left, right)
+    expr4 = (value|ws):left exp*:right -> calculate(left, right)
     """,
     {"calculate": calculate, 'handle_factorial': math.factorial}
 )
