@@ -27,4 +27,8 @@ def test_d6_mul_4():
 
 
 def test_dice_expo():
-    assert roll('1**5d3') in range(1, 4)
+    assert roll('5**2d1') == 25
+
+
+def test_dice_expo1():
+    assert roll('5d1**5') == 5

@@ -23,32 +23,6 @@ from typing import List
 _print_debug_output = False
 
 
-def handle_factorial(num: int) -> int:
-
-    # Look, there were a large number of stackoverflow threads that
-    # went over this and a lot of them just hurt my head.
-    #
-    # From what I understood of what people were saying, a negative
-    # factorial can make sense but people tend not to care because
-    # the only function that is able to meet certain criteria is
-    # the gamma function which are all positive numbers.
-    #
-    # For what we're doing, this is way, way overkill and far more of
-    # a long-winded math problem than I ever dared dream of. Let's just
-    # call this an exception.
-    if 0 > num:
-        raise Exception(
-            "Factorials must be positive or zero. Dont' @ me.")
-
-    if num == 0:
-        return 1
-
-    return functools.reduce(
-        lambda x, y: x * y,
-        [i for i in range(1, num + 1)]
-    )
-
-
 def calculate(start, pairs):
     result = start
     global _print_debug_output
@@ -165,7 +139,7 @@ expression_grammar = parsley.makeGrammar(
     expr2 = expr3:left mul_div*:right -> calculate(left, right)
     expr3 = (value|ws):left exp_dice*:right -> calculate(left, right)
     """,
-    {"calculate": calculate, 'handle_factorial': handle_factorial}
+    {"calculate": calculate, 'handle_factorial': math.factorial}
 )
 
 
