@@ -18,7 +18,6 @@ from random import randint
 from typing import List, Union
 
 import click
-
 import parsley
 
 PRINT_DEBUG_OUTPUT = False
@@ -171,18 +170,18 @@ def roll(expression: str = '') -> str:
               help='Print the individual die roll values')
 def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     """
+    CLI dice roller.
+
     Usage: roll [EXPRESSION]
     A cli command for rolling dice and adding modifiers in the
     same fashion as the node.js version on npm.
 
     Examples:
-
         roll                - Rolls 1d20
 
         roll <expression>   - Rolls all dice + does math
 
     Expressions:
-
         1d20                - Rolls one 20-sided die
 
         d20                 - Does not require a '1' in front of 'd'
@@ -194,7 +193,6 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
         (1d4)d6             - Rolls 1d4 d6 die
     """
     command_input = ' '.join(expression) if expression is not None else ''
-    # TODO: Make all output be returned
 
     global PRINT_DEBUG_OUTPUT
     PRINT_DEBUG_OUTPUT = verbose
