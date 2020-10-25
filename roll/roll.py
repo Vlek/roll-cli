@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Dice roller CLI Script
+Dice roller CLI Script.
 
 Makes it easy to roll dice via command line and is able handle the basic
 math functions, including parens!
@@ -13,101 +13,109 @@ d% -> 42
 etc.
 """
 
-import click
-import functools
 import math
-import parsley
 from random import randint
-from typing import List
+from typing import List, Union
 
-_print_debug_output = False
+import click
+
+import parsley
+
+PRINT_DEBUG_OUTPUT = False
 
 
-def calculate(start, pairs):
+def _roll_dice(left: Union[int, float, bool],
+               right: Union[int, float], debug_print: bool = False) -> int:
+    """Calculate value of dice roll notation."""
+    starting_left_value = left if not isinstance(left, bool) else 1
+
+    # If it's the case that we were given a dice with negative sides,
+    # then that doesn't mean anything in the real world. I cannot
+    # for the life of me figure out a possible scenario where that
+    # would make sense. We will just error out.
+    if right < 0:
+        raise Exception('The sides of a die must be positive or zero.')
+
+    result_type = type(left)
+
+    if result_type == float:
+        right *= left
+
+    # When we use a dice expression without explicitly expressing
+    # how many to roll, we want to specifically state that it's
+    # supposed to be a 1. It's for some reason returning a boolean
+    # true when it finds the whitespace or nothing character first
+    # instead of a value.
+    #
+    # This is also the case when we have a floating point number
+    # as the number of dice that we will roll. 0.5d20 == 1d10, so,
+    # after we've changed the value, we need to reset the start.
+    if result_type in [bool, float]:
+        left = 1
+
+    result_is_negative = left < 0
+
+    if result_is_negative:
+        left = abs(left)
+
+    right = math.ceil(right)
+
+    rolls = [
+        randint(1, right) if right != 0 else 0 for _ in range(left)
+    ]
+
+    rolls_total = sum(rolls)
+
+    if result_is_negative:
+        rolls_total *= -1
+
+    if debug_print:
+
+        debug_message = [
+            f'{starting_left_value}d{right}:',
+            f'{rolls_total}',
+            (f'{rolls}' if len(rolls) > 1 else '')
+        ]
+
+        click.echo(' '.join(debug_message))
+
+    return rolls_total
+
+
+def calculate(start: int, pairs: List[Union['str', 'int']]) -> int:
+    """Calculate the total value based on operation."""
     result = start
-    global _print_debug_output
+    global PRINT_DEBUG_OUTPUT
 
-    # print(f'Start: {start}, pairs: {pairs}')
+    print(f'Start: {start}, pairs: {pairs}')
 
-    for op, value in pairs:
+    for opr, value in pairs:
 
         # This is for the case where it's like "6 +" without a right-hand side:
-        if type(value) == bool:
+        if isinstance(value, bool):
             raise Exception('An operation was missing a right-hand side')
 
         # This is for the missing left-hand side:
-        if type(start) == bool:
-
+        if isinstance(start, bool):
             # If it's not a dice, then that's a problem.
-            if op != 'd':
+            if opr != 'd':
                 raise Exception("An operation was missing a left-hand side")
             start = 1
 
-        if op == '+':
+        if opr == '+':
             result += value
-        elif op == '-':
+        elif opr == '-':
             result -= value
-        elif op == '*':
+        elif opr == '*':
             result *= value
-        elif op == '/':
+        elif opr == '/':
             result /= value
-        elif op == '%':
+        elif opr == '%':
             result %= value
-        elif op == '**':
+        elif opr == '**':
             result **= value
-        elif op == 'd':
-
-            # If it's the case that we were given a dice with negative sides,
-            # then that doesn't mean anything in the real world. I cannot
-            # for the life of me figure out a possible scenario where that
-            # would make sense. We will just error out.
-            if 0 > value:
-                raise Exception('The sides of a die must be positive or zero.')
-
-            result_type = type(result)
-
-            if result_type == float:
-                value *= result
-
-            # When we use a dice expression without explicitly expressing
-            # how many to roll, we want to specifically state that it's
-            # supposed to be a 1. It's for some reason returning a boolean
-            # true when it finds the whitespace or nothing character first
-            # instead of a value.
-            #
-            # This is also the case when we have a floating point number
-            # as the number of dice that we will roll. 0.5d20 == 1d10, so,
-            # after we've changed the value, we need to reset the start.
-            if result_type in [bool, float]:
-                result = 1
-
-            result_is_negative = 0 > result
-
-            if result_is_negative:
-                result = abs(result)
-
-            value = math.ceil(value)
-
-            rolls = [
-                randint(1, value) if value != 0 else 0 for _ in range(result)
-            ]
-
-            rolls_total = sum(rolls)
-
-            if result_is_negative:
-                rolls_total *= -1
-
-            if _print_debug_output:
-
-                debug_message = [
-                    f'{"-" if result_is_negative else ""}{start}d{value}:',
-                    f'{rolls_total}',
-                    (f'{rolls}' if len(rolls) > 1 else '')
-                ]
-
-                click.echo(' '.join(debug_message))
-
-            result = rolls_total
+        elif opr == 'd':
+            result = _roll_dice(result, value, PRINT_DEBUG_OUTPUT)
 
     return result
 
@@ -132,7 +140,7 @@ expression_grammar = parsley.makeGrammar(
     die = 'd' ws expr4:n -> ('d', n)
 
     add_sub = ws (add | sub)
-    mul_div = ws (mod | mul | div)
+    mul_div = ws (mul | div | mod)
     dice = ws (percentage_die | die)
 
     expr = expr2:left add_sub*:right -> calculate(left, right)
@@ -144,8 +152,8 @@ expression_grammar = parsley.makeGrammar(
 )
 
 
-def roll(expression='') -> str:
-
+def roll(expression: str = '') -> str:
+    """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars = len(expression.strip("0123456789d-/*() %+.!")) > 0
 
     if input_had_bad_chars:
@@ -161,14 +169,15 @@ def roll(expression='') -> str:
 @click.argument('expression', nargs=-1, type=str)
 @click.option('-v', '--verbose', 'verbose', is_flag=True,
               help='Print the individual die roll values')
-def roll_cli(expression: List[str], verbose: bool) -> None:
+def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     """
+    Usage: roll [EXPRESSION]
     A cli command for rolling dice and adding modifiers in the
     same fashion as the node.js version on npm.
 
-    Usage:
+    Examples:
 
-        roll <nothing>      - Rolls 1d20
+        roll                - Rolls 1d20
 
         roll <expression>   - Rolls all dice + does math
 
@@ -184,13 +193,11 @@ def roll_cli(expression: List[str], verbose: bool) -> None:
 
         (1d4)d6             - Rolls 1d4 d6 die
     """
-
+    command_input = ' '.join(expression) if expression is not None else ''
     # TODO: Make all output be returned
 
-    command_input = ' '.join(expression)
-
-    global _print_debug_output
-    _print_debug_output = verbose
+    global PRINT_DEBUG_OUTPUT
+    PRINT_DEBUG_OUTPUT = verbose
 
     click.echo(roll(command_input))
 

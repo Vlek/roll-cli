@@ -26,6 +26,10 @@ def test_div_b4_sub1():
     assert roll('100 - 21 / 7') == 97
 
 
+def test_parens():
+    assert roll('(1 + 4) / 5') == 1
+
+
 def test_inception_dice1():
     assert roll('1d7d4d6') in range(1, 169)
 

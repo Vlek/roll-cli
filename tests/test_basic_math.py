@@ -1,5 +1,6 @@
 
 import pytest
+
 from roll import roll
 
 
@@ -46,6 +47,10 @@ def test_subtraction3():
 
 def test_subtraction4():
     assert roll('73 - 100') == -27
+
+
+def test_subtraction5():
+    assert roll('5 - -10') == 15
 
 
 def test_multiplication1():
@@ -100,12 +105,20 @@ def test_sub_mul_add_mul_sub():
     assert roll('40 - 3 * 7 + 2 * 9 - 20') == 17
 
 
+def test_parens():
+    assert roll('(2 + 5) * 3') == 21
+
+
 def test_parens1():
     assert roll('(4 + 2) * 3') == 18
 
 
 def test_parens2():
     assert roll('3 * (10 - 5)') == 15
+
+
+def test_parens3():
+    assert roll('(2 + 8 / (9 - 5)) * 3') == 12
 
 
 def test_modulus1():
@@ -154,5 +167,10 @@ def test_bad_parens():
         roll('((')
 
 
+def test_bad_parens2():
+    with pytest.raises(Exception):
+        roll('(2 +)')
+
+
 def test_add_explonential():
-    roll("3 + 7**3") == 346
+    assert roll("3 + 7**3") == 346
