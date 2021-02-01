@@ -49,10 +49,7 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     """
     command_input = ' '.join(expression) if expression is not None else ''
 
-    global PRINT_DEBUG_OUTPUT
-    PRINT_DEBUG_OUTPUT = verbose
-
-    click.echo(roll(command_input))
+    click.echo(roll(command_input, verbose))
 
 
 if __name__ == '__main__':

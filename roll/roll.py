@@ -6,21 +6,6 @@ Dice roller CLI Script.
 Makes it easy to roll dice via command line and is able handle the basic
 math functions, including parens!
 
-Grammar:
-Digit ::=  [1234567890]
-Number ::= ( '-' )? Digit Digit* ( '.' Digit Digit*)?
-AddOrSub ::= Number ('+' | '-') Number
-MultOrDiv ::= Number ('*' | '/' | '%') Number
-Exponent ::= Number '**' Number
-PercentDie ::= Number? 'd%'
-Die ::= Number? 'd' Number
-Dice ::= Die | PercentDie
-Expression ::= (Exponent | Dice | MultOrDiv | AddOrSub)
-Parens ::= '(' Expression ')'
-Main ::= (Parens | Expression)*
-
-Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
-
 Input -> Output
 1d20 -> 19
 1d8 + 3d6 + 5 -> 15
@@ -33,7 +18,9 @@ import math
 from random import randint
 from typing import Union
 
-import pyparsing as pp
+import roll.diceparser as diceparser
+
+_DICE_PARSER = diceparser.DiceParser()
 
 
 def _roll_dice(num_dice: Union[int, float],
@@ -85,13 +72,15 @@ def _roll_dice(num_dice: Union[int, float],
     return {rolls_total, debug_message}
 
 
-def _parse_and_calculate(expression: str = '') -> int:
+def _parse_and_calculate(expression: str = '1d20', debug: bool = False) -> int:
     """Parse and calculate the total of a given expression."""
-    result = 0
+    if debug:
+        print(f"Parsing expression: {expression}")
+    result = _DICE_PARSER.evaluate(expression)
     return result
 
 
-def roll(expression: str = '') -> str:
+def roll(expression: str = '', debug: bool = False) -> str:
     """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars: bool = len(
         expression.strip("0123456789d-/*() %+.!")) > 0
@@ -102,7 +91,7 @@ def roll(expression: str = '') -> str:
     if expression.strip() == '':
         expression = "1d20"
 
-    return _parse_and_calculate(expression)
+    return _parse_and_calculate(expression, debug)
 
 
 if __name__ == "__main__":

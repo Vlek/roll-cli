@@ -1,5 +1,6 @@
 
 import pytest
+
 from roll import roll
 
 
@@ -42,6 +43,10 @@ def test_interpret_dice2():
 
 def test_interpret_dice_with_spaces():
     assert roll('       2    d  8           ') in range(2, 17)
+
+
+def test_interpret_subtract_negative():
+    assert roll('1 - -5') == 6
 
 
 def test_bad_input1():

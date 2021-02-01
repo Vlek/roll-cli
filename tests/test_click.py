@@ -1,7 +1,7 @@
 
 from click.testing import CliRunner
-import pytest
-from roll.roll import roll_cli
+
+from roll.click import roll_cli
 
 runner = CliRunner()
 
