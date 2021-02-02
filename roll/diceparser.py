@@ -178,9 +178,14 @@ class DiceParser:
         operator = None
 
         for val in parsed_values:
-            if isinstance(val, (int, float)) or val in self.constants:
+            if (
+                    isinstance(val, (int, float, ParseResults)) or
+                    val in self.constants
+            ):
                 if val in self.constants:
                     val = self.constants[val]
+                elif isinstance(val, ParseResults):
+                    val = self.evaluate(val)
 
                 if operator is not None:
                     result = operator(result, val)
@@ -193,9 +198,6 @@ class DiceParser:
                     continue
 
                 operator = self.operations[val]
-
-            elif isinstance(val, ParseResults):
-                result += self.evaluate(val)
 
             elif val in ["D%", "d%"]:
                 result = _eval_die(result, 100)
