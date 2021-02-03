@@ -30,8 +30,11 @@ from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from typing import List, Union
 
-from pyparsing import (CaselessKeyword, Forward, ParseResults, Regex, oneOf,
-                       opAssoc, operatorPrecedence, pyparsing_common)
+from pyparsing import (CaselessKeyword, Forward, ParserElement, ParseResults,
+                       Regex, oneOf, opAssoc, operatorPrecedence,
+                       pyparsing_common)
+
+ParserElement.enablePackrat()
 
 
 def _roll_dice(
@@ -183,7 +186,7 @@ class DiceParser:
 if __name__ == "__main__":
     parser = DiceParser()
 
-    print(parser._parser.validate())
+    # print(parser._parser.validate())
     roll_strings = [
         "3",
         "-3",
@@ -214,7 +217,7 @@ if __name__ == "__main__":
         "pi * e",
         "(2 + 8 / (9 - 5)) * 3",
         "100 - 21 / 7",
-        # "((((((((((((3))))))))))))",
+        # "((((((3))))))",
     ]
 
     for rs in roll_strings:
