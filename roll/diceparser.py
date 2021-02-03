@@ -30,12 +30,14 @@ from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from typing import List, Union
 
-from pyparsing import (CaselessKeyword, Forward, Literal, ParseResults, oneOf,
+from pyparsing import (CaselessKeyword, Forward, ParseResults, Regex, oneOf,
                        opAssoc, operatorPrecedence, pyparsing_common)
 
 
-def _roll_dice(num_dice: Union[int, float],
-               sides: Union[int, float], debug_print: bool = False) -> int:
+def _roll_dice(
+        num_dice: Union[int, float],
+        sides: Union[int, float],
+        debug_print: bool = False) -> Union[int, float]:
     """Calculate value of dice roll notation."""
     starting_num_dice = num_dice
     starting_sides = sides
@@ -45,11 +47,9 @@ def _roll_dice(num_dice: Union[int, float],
     # for the life of me figure out a possible scenario where that
     # would make sense. We will just error out.
     if sides < 0:
-        raise Exception('The sides of a die must be positive or zero.')
+        raise ValueError('The sides of a die must be positive or zero.')
 
-    result_type = type(num_dice)
-
-    if result_type == float:
+    if isinstance(num_dice, float):
         sides *= num_dice
 
         # 0.5d20 == 1d10, so, after we've changed the value,
@@ -64,8 +64,8 @@ def _roll_dice(num_dice: Union[int, float],
     sides = ceil(sides)
 
     rolls = [
-        randint(1, sides) if sides != 0 else 0 for _ in range(num_dice)
-    ]
+        randint(1, sides) for _ in range(num_dice)
+    ] if sides != 0 else []
 
     rolls_total = sum(rolls)
 
@@ -73,7 +73,6 @@ def _roll_dice(num_dice: Union[int, float],
         rolls_total *= -1
 
     if debug_print:
-
         debug_message = [
             f'{starting_num_dice}d{starting_sides}:',
             f'{rolls_total}',
@@ -81,36 +80,6 @@ def _roll_dice(num_dice: Union[int, float],
         ]
 
     return rolls_total
-
-
-def _eval_die(
-        num: Union[int, float],
-        sides: Union[int, float],
-        debug: bool = False) -> Union[int, float]:
-    """Evaluate a die."""
-    if sides == 0:
-        return 0
-
-    if sides < 0:
-        raise Exception("number of sides must be greater than 0.")
-
-    # Will need to properly weigh this later
-    if isinstance(sides, float):
-        sides = ceil(sides)
-
-    result = 0
-    if debug:
-        rolls = []
-
-    for _ in range(floor(num)):
-        roll = randint(1, sides)
-
-        if debug:
-            rolls.append(roll)
-
-        result += roll
-
-    return result
 
 
 class DiceParser:
@@ -174,7 +143,7 @@ class DiceParser:
         if isinstance(parsed_values, str):
             parsed_values = self.parse(parsed_values)
 
-        result = 0
+        result = None
         operator = None
 
         for val in parsed_values:
@@ -188,9 +157,12 @@ class DiceParser:
                     val = self.evaluate(val)
 
                 if operator is not None:
-                    result = operator(result, val)
+                    result = operator(result if result is not None else 1, val)
                 else:
-                    result += val
+                    if result is None:
+                        result = val
+                    else:
+                        result += val
 
             elif val in self.operations:
                 if val == "!":
@@ -200,7 +172,7 @@ class DiceParser:
                 operator = self.operations[val]
 
             elif val in ["D%", "d%"]:
-                result = _eval_die(result, 100)
+                result = _roll_dice(result if result is not None else 1, 100)
 
             else:
                 raise Exception("Unable to evaluate input.")
@@ -211,9 +183,12 @@ class DiceParser:
 if __name__ == "__main__":
     parser = DiceParser()
 
+    print(parser._parser.validate())
     roll_strings = [
         "3",
         "-3",
+        "--3",
+        "100.",
         "1 2",
         # "--7", # Currently have an issue with this.
         "9.0",
@@ -239,14 +214,15 @@ if __name__ == "__main__":
         "pi * e",
         "(2 + 8 / (9 - 5)) * 3",
         "100 - 21 / 7",
+        # "((((((((((((3))))))))))))",
     ]
 
     for rs in roll_strings:
         try:
             parsed_string = parser.parse(rs)
 
-            print(rs)
-            print(parsed_string)
+            # print(rs)
+            # print(parsed_string)
             print(parser.evaluate(parsed_string))
         except Exception:
             print("Exception occured parsing: " + rs)
