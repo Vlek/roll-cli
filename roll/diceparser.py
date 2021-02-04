@@ -25,14 +25,14 @@ Main ::= Expression
 Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 """
 
-from math import ceil, e, factorial, floor, pi
+from math import ceil, e, factorial, pi
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from typing import List, Union
 
-from pyparsing import (CaselessKeyword, Forward, ParserElement, ParseResults,
-                       Regex, oneOf, opAssoc, operatorPrecedence,
-                       pyparsing_common)
+from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
+                       Optional, ParserElement, ParseResults, oneOf, opAssoc,
+                       operatorPrecedence, pyparsing_common)
 
 ParserElement.enablePackrat()
 
@@ -114,8 +114,8 @@ class DiceParser:
     def _create_parser() -> Forward:
         """Create an instance of a dice roll string parser."""
         atom = (
+            CaselessLiteral("d%") |
             pyparsing_common.number |
-            oneOf("d% D%") |
             CaselessKeyword("pi") |
             CaselessKeyword("e")
         )
@@ -123,9 +123,17 @@ class DiceParser:
         expression = operatorPrecedence(atom, [
             (oneOf('^ **'), 2, opAssoc.RIGHT),
 
-            (oneOf('! d% D%'), 1, opAssoc.LEFT),
-            (oneOf('d D'), 2, opAssoc.LEFT),
-            (oneOf('d D'), 1, opAssoc.RIGHT),
+            (Literal('!'), 1, opAssoc.LEFT),
+
+            # (Literal('-'), 1, opAssoc.RIGHT),
+
+            (CaselessLiteral('d%'), 1, opAssoc.LEFT),
+            (CaselessLiteral('d'), 2, opAssoc.RIGHT),
+
+            # This line causes the recursion debug to go off.
+            # Will have to find a way to have an optional left
+            # operator in this case.
+            (CaselessLiteral('d'), 1, opAssoc.RIGHT),
 
             (oneOf('* / % //'), 2, opAssoc.LEFT),
 
@@ -186,8 +194,20 @@ class DiceParser:
 if __name__ == "__main__":
     parser = DiceParser()
 
-    # print(parser._parser.validate())
+    # print("Recursive issues:", parser._parser.validate())
     roll_strings = [
+        "5-3",
+        "3-5",
+        "3--5",
+        "1d2d3",
+        "5^2d1",
+        "0!d20",
+        "5 + 2!",
+        "5**(2)",
+        "5**2 * 7",
+        "2 + 5 d   6",
+        "(2)d6",
+        "2d(6)",
         "3",
         "-3",
         "--3",

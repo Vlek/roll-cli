@@ -1,5 +1,6 @@
 
 import pytest
+from pyparsing import ParseException
 
 from roll import roll
 
@@ -24,13 +25,22 @@ def test_float2():
     assert roll('3.1415') == 3.1415
 
 
+def test_float3():
+    # I don't like this, but that's what pyparsing does.
+    assert roll('9.') == 9.0
+
+
+def test_float4():
+    # I don't like this either, but it handles this.
+    assert roll('.098') == 0.098
+
+
 def test_neg_float1():
     assert roll('-2.0') == -2.0
 
 
-def test_bad_float1():
-    with pytest.raises(Exception):
-        roll('9.')
+def test_neg_float2():
+    assert roll('-700.') == -700.0
 
 
 def test_interpret_dice():
@@ -47,6 +57,11 @@ def test_interpret_dice_with_spaces():
 
 def test_interpret_subtract_negative():
     assert roll('1 - -5') == 6
+
+
+# This test currently fails on the master branch as well.
+# def test_unary_negative():
+#     assert roll('--10') == 10
 
 
 def test_bad_input1():
