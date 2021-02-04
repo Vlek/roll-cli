@@ -158,7 +158,7 @@ def test_factorial2():
 
 
 def test_bad_factorial1():
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         roll('-256!')
 
 
