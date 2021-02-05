@@ -31,7 +31,7 @@ from random import randint
 from typing import List, Union
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
-                       Optional, ParserElement, ParseResults, oneOf, opAssoc,
+                       ParserElement, ParseResults, oneOf, opAssoc,
                        operatorPrecedence, pyparsing_common)
 
 ParserElement.enablePackrat()
@@ -123,9 +123,9 @@ class DiceParser:
         expression = operatorPrecedence(atom, [
             (oneOf('^ **'), 2, opAssoc.RIGHT),
 
+            (Literal('-'), 1, opAssoc.RIGHT),
             (Literal('!'), 1, opAssoc.LEFT),
 
-            # (Literal('-'), 1, opAssoc.RIGHT),
 
             (CaselessLiteral('d%'), 1, opAssoc.LEFT),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT),
@@ -158,6 +158,11 @@ class DiceParser:
         operator = None
 
         for val in parsed_values:
+
+            # In addition to dealing with values, we are also going to
+            # handle constants and nested lists here because, after they
+            # are evaluated, they are then used as values in the current
+            # evaluation context.
             if (
                     isinstance(val, (int, float, ParseResults)) or
                     val in self.constants
@@ -168,7 +173,19 @@ class DiceParser:
                     val = self.evaluate(val)
 
                 if operator is not None:
-                    result = operator(result if result is not None else 1, val)
+
+                    # There are currently only two cases that could
+                    # cause result to be none, either we're dealing
+                    # with a dice roll that doesn't have a left-hand
+                    # number or a unary minus. In either case, we have
+                    # to initialize the result accordingly.
+                    if result is None:
+                        if operator is _roll_dice:
+                            result = 1
+                        else:
+                            result = 0
+
+                    result = operator(result, val)
                 else:
                     if result is None:
                         result = val
@@ -176,6 +193,10 @@ class DiceParser:
                         result += val
 
             elif val in self.operations:
+
+                # Since factorials are unary and the value is to the left-
+                # hand side, we will execute the factorial function here
+                # as we do not have to wait for any further input.
                 if val == "!":
                     result = factorial(result)
                     continue
@@ -213,7 +234,7 @@ if __name__ == "__main__":
         "--3",
         "100.",
         "1 2",
-        # "--7", # Currently have an issue with this.
+        "--7",
         "9.0",
         "-12.05",
         "1 + 2",
@@ -237,7 +258,7 @@ if __name__ == "__main__":
         "pi * e",
         "(2 + 8 / (9 - 5)) * 3",
         "100 - 21 / 7",
-        # "((((((3))))))",
+        "((((((3))))))",
     ]
 
     for rs in roll_strings:
