@@ -1,12 +1,16 @@
 language: python
-
 python:
   - 3.6
   - 3.7
   - 3.8
 
-install: pip install -e .[tests]
+before_install:
+- pip install poetry
 
-script: coverage run --source roll -m pytest
+install:
+- poetry install
+
+script:
+- poetry run coverage run --source roll -m pytest
 
 after_success: codecov
