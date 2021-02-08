@@ -189,10 +189,7 @@ class DiceParser:
 
                     result = operator(result, val)
                 else:
-                    if result is None:
-                        result = val
-                    else:
-                        result += val
+                    result = val
 
             elif val in self.operations:
 

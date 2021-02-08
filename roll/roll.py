@@ -19,9 +19,10 @@ import roll.diceparser as diceparser
 _DICE_PARSER = diceparser.DiceParser()
 
 
-def _parse_and_calculate(expression: str = '1d20', debug: bool = False) -> int:
+def _parse_and_calculate(expression: str = '1d20',
+                         verbose: bool = False) -> int:
     """Parse and calculate the total of a given expression."""
-    if debug:
+    if verbose:
         print(f"Parsing expression: {expression}")
 
     result = _DICE_PARSER.evaluate(expression)
@@ -29,10 +30,10 @@ def _parse_and_calculate(expression: str = '1d20', debug: bool = False) -> int:
     return result
 
 
-def roll(expression: str = '', debug: bool = False) -> str:
+def roll(expression: str = '', verbose: bool = False) -> str:
     """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars: bool = len(
-        expression.strip("0123456789d-/*() %+.!^")) > 0
+        expression.strip("0123456789d-/*() %+.!^pie")) > 0
 
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')
@@ -40,7 +41,7 @@ def roll(expression: str = '', debug: bool = False) -> str:
     if expression.strip() == '':
         expression = "1d20"
 
-    return _parse_and_calculate(expression, debug)
+    return _parse_and_calculate(expression, verbose)
 
 
 if __name__ == "__main__":

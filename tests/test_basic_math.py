@@ -1,6 +1,7 @@
 
-import pytest
+from math import e, pi
 
+import pytest
 from roll import roll
 
 
@@ -174,3 +175,9 @@ def test_bad_parens2():
 
 def test_add_explonential():
     assert roll("3 + 7**3") == 346
+
+def test_pi():
+    assert roll('pi') == pi
+
+def test_e():
+    assert roll('e') == e
