@@ -32,7 +32,7 @@ def _parse_and_calculate(expression: str = '1d20', debug: bool = False) -> int:
 def roll(expression: str = '', debug: bool = False) -> str:
     """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars: bool = len(
-        expression.strip("0123456789d-/*() %+.!")) > 0
+        expression.strip("0123456789d-/*() %+.!^")) > 0
 
     if input_had_bad_chars:
         raise Exception('Input contained invalid characters.')

@@ -6,6 +6,12 @@ from roll.click import roll_cli
 runner = CliRunner()
 
 
+def test_basic_roll():
+    result = runner.invoke(roll_cli, [])
+    assert result.exit_code == 0
+    assert int(result.output.split()[-1]) in range(1, 21)
+
+
 # def test_basic_rolls():
 #     for _ in range(1000):
 #         result = runner.invoke(roll_cli, [])

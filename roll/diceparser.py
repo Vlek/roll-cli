@@ -31,8 +31,8 @@ from random import randint
 from typing import List, Union
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
-                       ParserElement, ParseResults, oneOf, opAssoc,
-                       operatorPrecedence, pyparsing_common)
+                       ParseException, ParserElement, ParseResults, oneOf,
+                       opAssoc, operatorPrecedence, pyparsing_common)
 
 ParserElement.enablePackrat()
 
@@ -126,7 +126,6 @@ class DiceParser:
             (Literal('-'), 1, opAssoc.RIGHT),
             (Literal('!'), 1, opAssoc.LEFT),
 
-
             (CaselessLiteral('d%'), 1, opAssoc.LEFT),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT),
 
@@ -144,7 +143,10 @@ class DiceParser:
 
     def parse(self: "DiceParser", dice_string: str) -> List[Union[str, int]]:
         """Parse well-formed dice roll strings."""
-        return self._parser.parseString(dice_string, parseAll=True)
+        try:
+            return self._parser.parseString(dice_string, parseAll=True)
+        except ParseException as e:
+            raise SyntaxError("Unable to parse input string: " + dice_string)
 
     def evaluate(
             self: "DiceParser",
@@ -207,7 +209,7 @@ class DiceParser:
                 result = _roll_dice(result if result is not None else 1, 100)
 
             else:
-                raise Exception("Unable to evaluate input.")
+                raise ValueError("Unable to evaluate input.")
 
         return result
 
@@ -268,5 +270,5 @@ if __name__ == "__main__":
             # print(rs)
             # print(parsed_string)
             print(parser.evaluate(parsed_string))
-        except Exception:
-            print("Exception occured parsing: " + rs)
+        except Exception as e:
+            print(f"Exception '{e}' occured parsing: " + rs)
