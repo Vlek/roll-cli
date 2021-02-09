@@ -53,7 +53,6 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     result = roll(command_input, verbose)
 
     if verbose:
-        print(result['rolls'])
         for r in result['rolls']:
             click.echo(
                 f"{r['dice']}: {r['rolls']}"

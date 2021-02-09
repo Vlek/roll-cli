@@ -12,6 +12,10 @@ keywords = [
     "gaming", "rp", "rpg", "parse", "parser", "parsing",
     "cli", "terminal"
 ]
+packages = [
+    { include = "roll" },
+    { include = "roll/**/*.py" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -29,3 +33,6 @@ codecov = "^2.1.10"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+roll = 'roll.click_dice:roll_cli'
