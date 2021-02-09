@@ -28,7 +28,14 @@ Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 from math import ceil, e, factorial, pi
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
+from sys import version_info
 from typing import List, Union
+
+# TypedDict was added in 3.8.
+if version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, ParseResults, oneOf,
@@ -37,10 +44,21 @@ from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
 ParserElement.enablePackrat()
 
 
+class RollResults(TypedDict):
+    total: Union[int, float]
+    dice: str
+    rolls: List[Union[int, float]]
+
+
+class EvaluationResults(TypedDict):
+    total: Union[int, float, None]
+    rolls: List[RollResults]
+
+
 def _roll_dice(
         num_dice: Union[int, float],
-        sides: Union[int, float],
-        debug_print: bool = False) -> Union[int, float]:
+        sides: Union[int, float]
+        ) -> RollResults:
     """Calculate value of dice roll notation."""
     starting_num_dice = num_dice
     starting_sides = sides
@@ -66,7 +84,7 @@ def _roll_dice(
 
     sides = ceil(sides)
 
-    rolls = [
+    rolls: List[Union[int, float]] = [
         randint(1, sides) for _ in range(num_dice)
     ] if sides != 0 else []
 
@@ -75,14 +93,13 @@ def _roll_dice(
     if result_is_negative:
         rolls_total *= -1
 
-    if debug_print:
-        debug_message = [
-            f'{starting_num_dice}d{starting_sides}:',
-            f'{rolls_total}',
-            (f'{rolls}' if len(rolls) > 1 else '')
-        ]
+    result: RollResults = {
+        'total': rolls_total,
+        'dice': f'{starting_num_dice}d{starting_sides}',
+        'rolls': rolls
+    }
 
-    return rolls_total
+    return result
 
 
 class DiceParser:
@@ -145,20 +162,22 @@ class DiceParser:
         """Parse well-formed dice roll strings."""
         try:
             return self._parser.parseString(dice_string, parseAll=True)
-        except ParseException as e:
+        except ParseException:
             raise SyntaxError("Unable to parse input string: " + dice_string)
 
     def evaluate(
             self: "DiceParser",
             parsed_values: Union[List[Union[str, int]], str]
-    ) -> Union[int, float]:
+    ) -> EvaluationResults:
         """Evaluate the output parsed values from roll strings."""
         if isinstance(parsed_values, str):
             parsed_values = self.parse(parsed_values)
 
-        result = None
+        result: Union[int, float, None] = None
         operator = None
+        dice_rolls = []
 
+        val: Union[str, int, float]
         for val in parsed_values:
 
             # In addition to dealing with values, we are also going to
@@ -172,10 +191,11 @@ class DiceParser:
                 if val in self.constants:
                     val = self.constants[val]
                 elif isinstance(val, ParseResults):
-                    val = self.evaluate(val)
+                    evaluation = self.evaluate(val)
+                    val = evaluation['total']
+                    dice_rolls.extend(evaluation['rolls'])
 
                 if operator is not None:
-
                     # There are currently only two cases that could
                     # cause result to be none, either we're dealing
                     # with a dice roll that doesn't have a left-hand
@@ -187,7 +207,13 @@ class DiceParser:
                         else:
                             result = 0
 
-                    result = operator(result, val)
+                    if operator is _roll_dice:
+                        current_rolls = operator(result, val)
+
+                        result = current_rolls['total']
+                        dice_rolls.append(current_rolls)
+                    else:
+                        result = operator(result, val)
                 else:
                     result = val
 
@@ -203,12 +229,21 @@ class DiceParser:
                 operator = self.operations[val]
 
             elif val in ["D%", "d%"]:
-                result = _roll_dice(result if result is not None else 1, 100)
+                current_rolls = _roll_dice(
+                    result if result is not None else 1, 100)
+
+                result = current_rolls['total']
+                dice_rolls.append(current_rolls)
 
             else:
                 raise ValueError("Unable to evaluate input.")
 
-        return result
+        total_results: EvaluationResults = {
+            'total': result,
+            'rolls': dice_rolls
+        }
+
+        return total_results
 
 
 if __name__ == "__main__":
