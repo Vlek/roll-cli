@@ -13,35 +13,31 @@ d% -> 42
 <Nothing> -> 14 (Rolls a d20)
 etc.
 """
+from typing import Union
 
-import roll.diceparser as diceparser
+import roll.diceparser as dp
 
-_DICE_PARSER = diceparser.DiceParser()
-
-
-def _parse_and_calculate(expression: str = '1d20',
-                         verbose: bool = False) -> int:
-    """Parse and calculate the total of a given expression."""
-    if verbose:
-        print(f"Parsing expression: {expression}")
-
-    result = _DICE_PARSER.evaluate(expression)
-
-    return result
+_DICE_PARSER = dp.DiceParser()
 
 
-def roll(expression: str = '', verbose: bool = False) -> str:
+def roll(expression: str = '',
+         verbose: bool = False) -> Union[int, float, dp.EvaluationResults]:
     """Evalute a string for dice and mathematical operations and calculate."""
-    input_had_bad_chars: bool = len(
-        expression.strip("0123456789d-/*() %+.!^pie")) > 0
+    bad_chars: str = "0123456789d-/*() %+.!^pie"
+    input_had_bad_chars: bool = len(expression.strip(bad_chars)) > 0
 
     if input_had_bad_chars:
-        raise Exception('Input contained invalid characters.')
+        raise ValueError('Input contained invalid characters.')
 
     if expression.strip() == '':
         expression = "1d20"
 
-    return _parse_and_calculate(expression, verbose)
+    result = _DICE_PARSER.evaluate(expression)
+
+    if verbose:
+        return result
+
+    return result['total']
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ etc.
 from typing import List
 
 import click
+
 from roll import roll
 
 
@@ -49,7 +50,19 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     """
     command_input = ' '.join(expression) if expression is not None else ''
 
-    click.echo(roll(command_input, verbose))
+    result = roll(command_input, verbose)
+
+    if verbose:
+        print(result['rolls'])
+        for r in result['rolls']:
+            click.echo(
+                f"{r['dice']}: {r['rolls']}"
+            )
+
+        click.echo(result['total'])
+
+    else:
+        click.echo(result)
 
 
 if __name__ == '__main__':
