@@ -28,7 +28,14 @@ Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 from math import ceil, e, factorial, pi
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
-from typing import List, TypedDict, Union
+from sys import version_info
+from typing import List, Union
+
+# TypedDict was added in 3.8.
+if version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, ParseResults, oneOf,

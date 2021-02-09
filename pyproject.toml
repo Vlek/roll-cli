@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyroll"
-version = "1.0.1"
+version = "2.0.0"
 description = "Dice roller with all of the features you could want."
 authors = ["Derek 'Vlek' McCammond <dmccammond25@gmail.com>"]
 license = "gpl-3.0"
