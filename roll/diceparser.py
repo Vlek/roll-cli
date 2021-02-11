@@ -25,7 +25,7 @@ Main ::= Expression
 Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 """
 
-from math import ceil, e, factorial, pi
+from math import ceil, e, factorial, pi, sqrt
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from sys import version_info
@@ -115,7 +115,8 @@ class DiceParser:
         "^": pow,
         "**": pow,
         "d": _roll_dice,
-        "!": factorial
+        "!": factorial,
+        "sqrt": sqrt
     }
 
     constants = {
@@ -138,6 +139,8 @@ class DiceParser:
         )
 
         expression = operatorPrecedence(atom, [
+            (Literal('-'), 1, opAssoc.RIGHT),
+            (CaselessLiteral('sqrt'), 1, opAssoc.RIGHT),
             (oneOf('^ **'), 2, opAssoc.RIGHT),
 
             (Literal('-'), 1, opAssoc.RIGHT),
@@ -212,6 +215,8 @@ class DiceParser:
 
                         result = current_rolls['total']
                         dice_rolls.append(current_rolls)
+                    elif operator is sqrt:
+                        result = operator(val)
                     else:
                         result = operator(result, val)
                 else:

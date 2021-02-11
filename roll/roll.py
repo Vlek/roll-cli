@@ -23,7 +23,7 @@ _DICE_PARSER = dp.DiceParser()
 def roll(expression: str = '',
          verbose: bool = False) -> Union[int, float, dp.EvaluationResults]:
     """Evalute a string for dice and mathematical operations and calculate."""
-    bad_chars: str = "0123456789d-/*() %+.!^pie"
+    bad_chars: str = "0123456789d-/*() %+.!^piesqrt"
     input_had_bad_chars: bool = len(expression.strip(bad_chars)) > 0
 
     if input_had_bad_chars:

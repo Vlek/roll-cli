@@ -1,32 +1,25 @@
 
-from math import e, pi
+from math import e, pi, sqrt
+from typing import Union
 
 import pytest
 from roll import roll
 
 
-def test_addition1():
-    assert roll('2 + 2') == 4
-
-
-def test_addition2():
-    assert roll('10 + 52') == 62
-
-
-def test_addition3():
-    assert roll('1 + 10 + 100 + 1000') == 1111
-
-
-def test_addition_without_spaces1():
-    assert roll('8+16') == 24
-
-
-def test_addition_without_spaces2():
-    assert roll('5+17+202+81') == 305
-
-
-def test_addition_with_uneven_spaces1():
-    assert roll('19     +    57') == 76
+@pytest.mark.parametrize("equation,result", [
+    ('2 + 2', 4),
+    ('10 + 52', 62),
+    ('1 + 10 + 100 + 1000', 1111),
+    ('8 + 16', 24),
+    ('5 + 17 + 202 + 81', 305),
+    ('19 + 57', 76),
+    ('-5 + 20', 15),
+    ('50 + -25', 25),
+    ('1.5 + 0.5', 2),
+    ('204.5 + 20', 224.5),
+])
+def test_addition(equation: str, result: Union[int, float]):
+    assert roll(equation) == result
 
 
 def test_addition_with_uneven_spaces2():
@@ -34,56 +27,35 @@ def test_addition_with_uneven_spaces2():
         roll('321\t\n  + \t\t\t   \t 18')
 
 
-def test_subtraction1():
-    assert roll('10 - 5') == 5
+@pytest.mark.parametrize("equation,result", [
+    ('10 - 5', 5),
+    ('100 - 52', 48),
+    ('1111 - 100 - 10 - 1', 1000),
+    ('73 - 100', -27),
+    ('5 - -10', 15),
+])
+def test_subtraction(equation: str, result: Union[int, float]):
+    assert roll(equation) == result
 
 
-def test_subtraction2():
-    assert roll('100 - 52') == 48
+@pytest.mark.parametrize("equation,result", [
+    ('2 * 2', 4),
+    ('20 * 5', 100),
+    ('1 * 10 * 100', 1000),
+    ('6 * 8 * 2 * 10', 960),
+])
+def test_multiplication(equation: str, result: Union[int, float]):
+    assert roll(equation) == result
 
 
-def test_subtraction3():
-    assert roll('1111 - 100 - 10 - 1') == 1000
-
-
-def test_subtraction4():
-    assert roll('73 - 100') == -27
-
-
-def test_subtraction5():
-    assert roll('5 - -10') == 15
-
-
-def test_multiplication1():
-    assert roll('2 * 2') == 4
-
-
-def test_multiplication2():
-    assert roll('20 * 5') == 100
-
-
-def test_multiplication3():
-    assert roll('1 * 10 * 100') == 1000
-
-
-def test_multiplication4():
-    assert roll('6 * 8 * 2 * 10') == 960
-
-
-def test_division1():
-    assert roll('5 / 5') == 1
-
-
-def test_division2():
-    assert roll('15 / 3') == 5
-
-
-def test_division3():
-    assert roll('48 / 6') == 8
-
-
-def test_division4():
-    assert roll('54 / 9') == 6
+@pytest.mark.parametrize("equation,result", [
+    ('5 / 5', 1),
+    ('15 / 3', 5),
+    ('48 / 6', 8),
+    ('54 / 9', 6),
+])
+def test_division(equation: str, result: Union[int, float]):
+    assert roll(equation) == result
 
 
 def test_add_mul():
@@ -176,8 +148,38 @@ def test_bad_parens2():
 def test_add_explonential():
     assert roll("3 + 7**3") == 346
 
-def test_pi():
-    assert roll('pi') == pi
 
-def test_e():
-    assert roll('e') == e
+@pytest.mark.parametrize("equation,result", [
+    ('pi', pi),
+    ('e', e),
+])
+def test_constants(equation: str, result: Union[int, float]):
+    assert roll(equation) == result
+
+
+@pytest.mark.parametrize("equation,result", [
+    ('sqrt 25', 5),
+    # Addition
+    ('2 + sqrt 9', 5),
+    ('sqrt 36 + 7', 13),
+    # Subtraction
+    ('sqrt 16 - 4', 0),
+    ('20 - sqrt 100', 10),
+    # Multiplication
+    ('sqrt 4 * 12', 24),
+    ('10 * sqrt 81', 90),
+    # Division
+    ('sqrt 25 / 5', 1),
+    ('60 / sqrt 36', 10),
+    # Unary minus
+    ('sqrt --16', 4),
+    ('- sqrt 49', -7),
+    # Constants
+    ('sqrt e', sqrt(e)),
+    ('sqrt pi', sqrt(pi)),
+    # Exponentiation
+    ('sqrt 169 ** 2', 169),
+    ('5 ** sqrt 9', 125),
+])
+def test_sqrt(equation: str, result: Union[int, float]):
+    assert roll(equation) == result

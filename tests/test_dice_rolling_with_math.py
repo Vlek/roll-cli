@@ -1,4 +1,5 @@
 
+import pytest
 from roll import roll
 
 
@@ -32,3 +33,11 @@ def test_dice_expo():
 
 def test_dice_expo1():
     assert roll('5d1**5') == 5
+
+
+@pytest.mark.parametrize("equation,range_low,range_high", [
+    ('sqrt 25 d 6', 5, 30),
+    ('1d sqrt 36', 1, 6),
+])
+def test_dice_sqrt(equation: str, range_low: int, range_high: int):
+    assert roll(equation) in range(range_low, range_high + 1)
