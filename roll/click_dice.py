@@ -13,18 +13,32 @@ d% -> 42
 etc.
 """
 
-from typing import List
+import enum
+from typing import List, Union
 
 import click
 
 from roll import roll
+from roll.diceparser import EvaluationResults
+
+
+class RollOption(enum.Enum):
+    Minimum = 0
+    Normal = 1
+    Maximum = 2
 
 
 @click.command()
 @click.argument('expression', nargs=-1, type=str)
+@click.option('-m', '--minimum', 'roll_option', flag_value=RollOption.Minimum,
+              help='Set dice to always roll the minimum value')
+@click.option('-M', '--maximum', 'roll_option', flag_value=RollOption.Maximum,
+              help='Set dice to always roll the maximum value')
 @click.option('-v', '--verbose', 'verbose', is_flag=True,
               help='Print the individual die roll values')
-def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
+def roll_cli(expression: List[str] = None,
+             roll_option: RollOption = RollOption.Normal,
+             verbose: bool = False) -> None:
     """
     CLI dice roller.
 
@@ -50,9 +64,14 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
     """
     command_input = ' '.join(expression) if expression is not None else ''
 
-    result = roll(command_input, verbose)
+    minimum: bool = roll_option == RollOption.Minimum
+    # maximum: bool = roll_option == RollOption.Maximum
 
-    if verbose:
+    result: Union[int, float, EvaluationResults] = roll(
+        command_input, verbose, minimum,
+    )
+
+    if verbose and isinstance(result, dict):
         for r in result['rolls']:
             click.echo(
                 f"{r['dice']}: {r['rolls']}"
@@ -65,4 +84,4 @@ def roll_cli(expression: List[str] = None, verbose: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    roll_cli()
+    roll_cli("5d6", RollOption.Minimum)

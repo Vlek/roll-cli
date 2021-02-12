@@ -40,4 +40,7 @@ def test_dice_expo1():
     ('1d sqrt 36', 1, 6),
 ])
 def test_dice_sqrt(equation: str, range_low: int, range_high: int):
-    assert roll(equation) in range(range_low, range_high + 1)
+    result = roll(equation, verbose=True)
+    print(result)
+    total = result['total']
+    assert total in range(range_low, range_high + 1)
