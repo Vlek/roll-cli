@@ -17,6 +17,8 @@ def test_basic_roll():
     ('100.0d6', 100, 600),
     ('100d6.0', 100, 600),
     ('2.0d100.0', 2, 200),
+    ('100.5d6', 101, 603),
+    ('1.0d6.5', 1, 7),
 ])
 def test_roll(equation: str, range_low: int, range_high: int):
     assert roll(equation) in range(range_low, range_high + 1)
