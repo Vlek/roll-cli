@@ -34,7 +34,14 @@ def test_verbose_ouput_mult_dice():
 
 
 def test_min_roll():
-    result = runner.invoke(roll_cli, ["5d6", "-m", "-v"])
+    result = runner.invoke(roll_cli, ["10d6", "-m", "-v"])
     print(result.output)
     assert result.exit_code == 0
-    assert int(result.output.split()[-1]) == 5
+    assert int(result.output.split()[-1]) == 10
+
+
+def test_max_roll():
+    result = runner.invoke(roll_cli, ["10d6", "-M", "-v"])
+    print(result.output)
+    assert result.exit_code == 0
+    assert int(result.output.split()[-1]) == 60

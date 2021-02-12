@@ -15,7 +15,7 @@ etc.
 """
 from typing import Union
 
-from roll.diceparser import DiceParser, EvaluationResults
+from roll.diceparser import DiceParser, EvaluationResults, RollOption
 
 _DICE_PARSER = DiceParser()
 
@@ -24,7 +24,7 @@ GOOD_CHARS: str = "0123456789d-/*() %+.!^piesqrt"
 
 def roll(expression: str = '',
          verbose: bool = False,
-         minimum: bool = False
+         roll_option: RollOption = RollOption.Normal,
          ) -> Union[int, float, EvaluationResults]:
     """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars: bool = len(expression.strip(GOOD_CHARS)) > 0
@@ -35,7 +35,7 @@ def roll(expression: str = '',
     if expression.strip() == '':
         expression = "1d20"
 
-    result: EvaluationResults = _DICE_PARSER.evaluate(expression, minimum)
+    result: EvaluationResults = _DICE_PARSER.evaluate(expression, roll_option)
 
     if verbose:
         return result

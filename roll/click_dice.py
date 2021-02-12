@@ -13,19 +13,12 @@ d% -> 42
 etc.
 """
 
-import enum
 from typing import List, Union
 
 import click
 
 from roll import roll
-from roll.diceparser import EvaluationResults
-
-
-class RollOption(enum.Enum):
-    Minimum = 0
-    Normal = 1
-    Maximum = 2
+from roll.diceparser import EvaluationResults, RollOption
 
 
 @click.command()
@@ -64,11 +57,8 @@ def roll_cli(expression: List[str] = None,
     """
     command_input = ' '.join(expression) if expression is not None else ''
 
-    minimum: bool = roll_option == RollOption.Minimum
-    # maximum: bool = roll_option == RollOption.Maximum
-
     result: Union[int, float, EvaluationResults] = roll(
-        command_input, verbose, minimum,
+        command_input, verbose, roll_option,
     )
 
     if verbose and isinstance(result, dict):

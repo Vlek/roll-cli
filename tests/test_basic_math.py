@@ -180,6 +180,7 @@ def test_constants(equation: str, result: Union[int, float]):
     # Exponentiation
     ('sqrt 169 ** 2', 169),
     ('5 ** sqrt 9', 125),
+    ('sqrt sqrt 10000', 10),
 ])
 def test_sqrt(equation: str, result: Union[int, float]):
     assert roll(equation) == result
