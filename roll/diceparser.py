@@ -25,11 +25,11 @@ Main ::= Expression
 Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 """
 
-from math import ceil, e, factorial, pi, sqrt
+from math import ceil, e, factorial, floor, pi, sqrt
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from sys import version_info
-from typing import List, Union
+from typing import Callable, Dict, List, Optional, Union
 
 # TypedDict was added in 3.8.
 if version_info >= (3, 8):
@@ -51,13 +51,14 @@ class RollResults(TypedDict):
 
 
 class EvaluationResults(TypedDict):
-    total: Union[int, float, None]
+    total: Union[int, float]
     rolls: List[RollResults]
 
 
 def _roll_dice(
         num_dice: Union[int, float],
-        sides: Union[int, float]
+        sides: Union[int, float],
+        minimum: bool = False,
         ) -> RollResults:
     """Calculate value of dice roll notation."""
     starting_num_dice = num_dice
@@ -70,13 +71,6 @@ def _roll_dice(
     if sides < 0:
         raise ValueError('The sides of a die must be positive or zero.')
 
-    if isinstance(num_dice, float):
-        sides *= num_dice
-
-        # 0.5d20 == 1d10, so, after we've changed the value,
-        # we need to set the left value to 1.
-        num_dice = 1
-
     result_is_negative = num_dice < 0
 
     if result_is_negative:
@@ -84,9 +78,22 @@ def _roll_dice(
 
     sides = ceil(sides)
 
-    rolls: List[Union[int, float]] = [
-        randint(1, sides) for _ in range(num_dice)
-    ] if sides != 0 else []
+    rolls: List[Union[int, float]] = []
+
+    if minimum:
+        rolls = [1] * ceil(num_dice)
+    elif sides != 0:
+        rolls = [randint(1, sides) for _ in range(floor(num_dice))]
+
+        # If it's the case that the number of dice is a float, then
+        # we take that to mean that it is a dice where the sides should
+        # be lowered to reflect the float amount.
+
+        # We do not want this to effect all dice rolls however, only the
+        # last one (or the only one if there's only a decimal portion).
+        if isinstance(num_dice, float) and (num_dice % 1) != 0:
+            sides = ceil(sides * (num_dice % 1))
+            rolls.append(randint(1, sides))
 
     rolls_total = sum(rolls)
 
@@ -105,7 +112,20 @@ def _roll_dice(
 class DiceParser:
     """Parser for evaluating dice strings."""
 
-    operations = {
+    operations: Dict[
+        str,
+        Union[
+            Callable[
+                [
+                    Union[int, float],
+                    Union[int, float]
+                ], Union[int, float, RollResults]],
+            # This is needed for factorial and sqrt
+            Callable[
+                [Union[int, float]],
+                Union[int, float]
+            ]
+        ]] = {
         "+": add,
         "-": sub,
         "*": mul,
@@ -170,7 +190,8 @@ class DiceParser:
 
     def evaluate(
             self: "DiceParser",
-            parsed_values: Union[List[Union[str, int]], str]
+            parsed_values: Union[List[Union[str, int]], str],
+            minimum: bool = False
     ) -> EvaluationResults:
         """Evaluate the output parsed values from roll strings."""
         if isinstance(parsed_values, str):
@@ -180,7 +201,7 @@ class DiceParser:
         operator = None
         dice_rolls = []
 
-        val: Union[str, int, float]
+        val: Union[str, int, float, Optional[float]]
         for val in parsed_values:
 
             # In addition to dealing with values, we are also going to
@@ -192,9 +213,9 @@ class DiceParser:
                     val in self.constants
             ):
                 if val in self.constants:
-                    val = self.constants[val]
+                    val = self.constants[str(val)]
                 elif isinstance(val, ParseResults):
-                    evaluation = self.evaluate(val)
+                    evaluation: EvaluationResults = self.evaluate(val, minimum)
                     val = evaluation['total']
                     dice_rolls.extend(evaluation['rolls'])
 
@@ -211,7 +232,7 @@ class DiceParser:
                             result = 0
 
                     if operator is _roll_dice:
-                        current_rolls = operator(result, val)
+                        current_rolls = _roll_dice(result, val, minimum)
 
                         result = current_rolls['total']
                         dice_rolls.append(current_rolls)
@@ -228,23 +249,20 @@ class DiceParser:
                 # hand side, we will execute the factorial function here
                 # as we do not have to wait for any further input.
                 if val == "!":
-                    result = factorial(result)
+                    result = factorial(result if result is not None else 0)
                     continue
 
                 operator = self.operations[val]
 
             elif val in ["D%", "d%"]:
                 current_rolls = _roll_dice(
-                    result if result is not None else 1, 100)
+                    result if result is not None else 1, 100, minimum)
 
                 result = current_rolls['total']
                 dice_rolls.append(current_rolls)
 
-            else:
-                raise ValueError("Unable to evaluate input.")
-
         total_results: EvaluationResults = {
-            'total': result,
+            'total': result if result is not None else 0,
             'rolls': dice_rolls
         }
 

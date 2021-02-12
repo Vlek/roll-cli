@@ -1,5 +1,5 @@
 
-from math import e, pi, sqrt
+import math
 from typing import Union
 
 import pytest
@@ -150,8 +150,8 @@ def test_add_explonential():
 
 
 @pytest.mark.parametrize("equation,result", [
-    ('pi', pi),
-    ('e', e),
+    ('pi', math.pi),
+    ('e', math.e),
 ])
 def test_constants(equation: str, result: Union[int, float]):
     assert roll(equation) == result
@@ -175,8 +175,8 @@ def test_constants(equation: str, result: Union[int, float]):
     ('sqrt --16', 4),
     ('- sqrt 49', -7),
     # Constants
-    ('sqrt e', sqrt(e)),
-    ('sqrt pi', sqrt(pi)),
+    ('sqrt e', math.sqrt(math.e)),
+    ('sqrt pi', math.sqrt(math.pi)),
     # Exponentiation
     ('sqrt 169 ** 2', 169),
     ('5 ** sqrt 9', 125),

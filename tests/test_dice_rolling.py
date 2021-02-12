@@ -9,26 +9,27 @@ def test_basic_roll():
     assert result in range(1, 21)
 
 
+@pytest.mark.parametrize('equation,range_low,range_high', [
+    ('', 1, 20),
+    ('d20', 1, 20),
+    ('1d20', 1, 20),
+    ('-1d20', -20, 0),
+    ('100.0d6', 100, 600),
+    ('100d6.0', 100, 600),
+    ('2.0d100.0', 2, 200),
+    ('100.5d6', 101, 603),
+    ('1.0d6.5', 1, 7),
+])
+def test_roll(equation: str, range_low: int, range_high: int):
+    assert roll(equation) in range(range_low, range_high + 1)
+
+
 def test_zero_dice_roll():
     assert roll('0d20') == 0
 
 
 def test_zero_sided_dice_roll():
     assert roll('1d0') == 0
-
-
-def test_d20():
-    assert roll('d20') in range(1, 21)
-
-
-def test_1d20():
-    result = roll('1d20')
-    assert type(result) == int
-    assert result in range(1, 21)
-
-
-def test_neg1d20():
-    assert roll('-1d20') in range(-20, 0)
 
 
 def test_1d_neg20():
