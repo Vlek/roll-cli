@@ -25,6 +25,7 @@ Main ::= Expression
 Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 """
 
+from enum import Enum
 from math import ceil, e, factorial, floor, pi, sqrt
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
@@ -55,10 +56,16 @@ class EvaluationResults(TypedDict):
     rolls: List[RollResults]
 
 
+class RollOption(Enum):
+    Minimum = 0
+    Normal = 1
+    Maximum = 2
+
+
 def _roll_dice(
         num_dice: Union[int, float],
         sides: Union[int, float],
-        minimum: bool = False,
+        roll_option: RollOption = RollOption.Normal,
         ) -> RollResults:
     """Calculate value of dice roll notation."""
     starting_num_dice = num_dice
@@ -80,15 +87,20 @@ def _roll_dice(
 
     rolls: List[Union[int, float]] = []
 
-    if minimum:
+    if roll_option == RollOption.Minimum:
         rolls = [1] * ceil(num_dice)
+    elif roll_option == RollOption.Maximum:
+        rolls = [floor(sides)] * floor(num_dice)
+
+        if isinstance(num_dice, float) and (num_dice % 1) != 0:
+            rolls.append(sides * (num_dice % 1))
     elif sides != 0:
         rolls = [randint(1, sides) for _ in range(floor(num_dice))]
 
         # If it's the case that the number of dice is a float, then
         # we take that to mean that it is a dice where the sides should
         # be lowered to reflect the float amount.
-
+        #
         # We do not want this to effect all dice rolls however, only the
         # last one (or the only one if there's only a decimal portion).
         if isinstance(num_dice, float) and (num_dice % 1) != 0:
@@ -191,7 +203,7 @@ class DiceParser:
     def evaluate(
             self: "DiceParser",
             parsed_values: Union[List[Union[str, int]], str],
-            minimum: bool = False
+            roll_option: RollOption = RollOption.Normal,
     ) -> EvaluationResults:
         """Evaluate the output parsed values from roll strings."""
         if isinstance(parsed_values, str):
@@ -215,7 +227,8 @@ class DiceParser:
                 if val in self.constants:
                     val = self.constants[str(val)]
                 elif isinstance(val, ParseResults):
-                    evaluation: EvaluationResults = self.evaluate(val, minimum)
+                    evaluation: EvaluationResults = self.evaluate(val,
+                                                                  roll_option)
                     val = evaluation['total']
                     dice_rolls.extend(evaluation['rolls'])
 
@@ -232,7 +245,7 @@ class DiceParser:
                             result = 0
 
                     if operator is _roll_dice:
-                        current_rolls = _roll_dice(result, val, minimum)
+                        current_rolls = _roll_dice(result, val, roll_option)
 
                         result = current_rolls['total']
                         dice_rolls.append(current_rolls)
@@ -256,7 +269,7 @@ class DiceParser:
 
             elif val in ["D%", "d%"]:
                 current_rolls = _roll_dice(
-                    result if result is not None else 1, 100, minimum)
+                    result if result is not None else 1, 100, roll_option)
 
                 result = current_rolls['total']
                 dice_rolls.append(current_rolls)
