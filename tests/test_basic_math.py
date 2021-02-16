@@ -151,7 +151,11 @@ def test_add_explonential():
 
 @pytest.mark.parametrize("equation,result", [
     ('pi', math.pi),
+    ('Pi', math.pi),
+    ('PI', math.pi),
+    ('pI', math.pi),
     ('e', math.e),
+    ('E', math.e),
 ])
 def test_constants(equation: str, result: Union[int, float]):
     assert roll(equation) == result
@@ -159,6 +163,11 @@ def test_constants(equation: str, result: Union[int, float]):
 
 @pytest.mark.parametrize("equation,result", [
     ('sqrt 25', 5),
+    ('Sqrt 25', 5),
+    ('sqrT 25', 5),
+    ('sQRt 25', 5),
+    ('sQRT 25', 5),
+    ('SQRT 25', 5),
     # Addition
     ('2 + sqrt 9', 5),
     ('sqrt 36 + 7', 13),

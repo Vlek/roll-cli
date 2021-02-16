@@ -19,7 +19,7 @@ from roll.diceparser import DiceParser, EvaluationResults, RollOption
 
 _DICE_PARSER = DiceParser()
 
-GOOD_CHARS: str = "0123456789d-/*() %+.!^piesqrt"
+GOOD_CHARS: str = "0123456789d-/*() %+.!^pPiIeEsSqQrRtTkK"
 
 
 def roll(expression: str = '',

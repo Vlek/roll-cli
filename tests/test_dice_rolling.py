@@ -19,6 +19,9 @@ def test_basic_roll():
     ('2.0d100.0', 2, 200),
     ('100.5d6', 101, 603),
     ('1.0d6.5', 1, 7),
+    ('1d0', 0, 0),
+    ('1d1', 1, 1),
+    ('1d2', 1, 2),
 ])
 def test_roll(equation: str, range_low: int, range_high: int):
     assert roll(equation) in range(range_low, range_high + 1)
@@ -86,3 +89,11 @@ def test_float_sides1():
 
 def test_float_sides2():
     assert roll('2d19.99') in range(2, 41)
+
+
+@pytest.mark.parametrize('equation,range_low,range_high', [
+    ('10d6k1', 1, 6),
+    ('4d6K3', 3, 18),
+])
+def test_keep(equation: str, range_low: int, range_high: int):
+    assert roll(equation) in range(range_low, range_high + 1)

@@ -121,6 +121,30 @@ def _roll_dice(
     return result
 
 
+def _keep_lowest_dice(results: RollResults,
+                      k: Union[int, float]) -> RollResults:
+    """Remove k number of lowest rolls from given RollResults."""
+    if len(results['rolls']) < k:
+        results['rolls'] = []
+        results['total'] = 0
+    else:
+        results['rolls'] = sorted(results['rolls'])[:ceil(k)]
+        results['total'] = sum(results['rolls'])
+    return results
+
+
+def _keep_highest_dice(results: RollResults,
+                       k: Union[int, float]) -> RollResults:
+    """Trim the results of a roll based on the provided amount to keep."""
+    if len(results['rolls']) < k:
+        results['rolls'] = []
+        results['total'] = 0
+    else:
+        results['rolls'] = sorted(results['rolls'])[-ceil(k):]
+        results['total'] = sum(results['rolls'])
+    return results
+
+
 class DiceParser:
     """Parser for evaluating dice strings."""
 
@@ -147,6 +171,8 @@ class DiceParser:
         "^": pow,
         "**": pow,
         "d": _roll_dice,
+        "k": _keep_lowest_dice,
+        "K": _keep_highest_dice,
         "!": factorial,
         "sqrt": sqrt
     }
@@ -180,6 +206,7 @@ class DiceParser:
 
             (CaselessLiteral('d%'), 1, opAssoc.LEFT),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT),
+            (CaselessLiteral('k'), 2, opAssoc.LEFT),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
@@ -251,6 +278,18 @@ class DiceParser:
                         dice_rolls.append(current_rolls)
                     elif operator is sqrt:
                         result = operator(val)
+                    elif operator is _keep_highest_dice:
+                        if len(dice_rolls) == 0:
+                            raise ValueError(
+                                "Unable to use keep without a dice roll.")
+
+                        previous_total: Union[int,
+                                              float] = dice_rolls[-1]['total']
+                        current_rolls = _keep_highest_dice(dice_rolls[-1], val)
+
+                        result += current_rolls['total'] - previous_total
+                        dice_rolls[-1] = current_rolls
+
                     else:
                         result = operator(result, val)
                 else:
