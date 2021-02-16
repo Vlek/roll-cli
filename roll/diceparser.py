@@ -122,7 +122,7 @@ def _roll_dice(
 
 
 def _keep_lowest_dice(results: RollResults,
-                      k: Union[int, float]) -> RollResults:
+                      k: Union[int, float] = 1) -> RollResults:
     """Remove k number of lowest rolls from given RollResults."""
     if len(results['rolls']) < k:
         results['rolls'] = []
@@ -134,7 +134,7 @@ def _keep_lowest_dice(results: RollResults,
 
 
 def _keep_highest_dice(results: RollResults,
-                       k: Union[int, float]) -> RollResults:
+                       k: Union[int, float] = 1) -> RollResults:
     """Trim the results of a roll based on the provided amount to keep."""
     if len(results['rolls']) < k:
         results['rolls'] = []
@@ -207,10 +207,11 @@ class DiceParser:
             (CaselessLiteral('d%'), 1, opAssoc.LEFT),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT),
             (CaselessLiteral('k'), 2, opAssoc.LEFT),
+            (CaselessLiteral('k'), 1, opAssoc.LEFT),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
-            # operator in this case.
+            # operand in this case.
             (CaselessLiteral('d'), 1, opAssoc.RIGHT),
 
             (oneOf('* / % //'), 2, opAssoc.LEFT),
@@ -278,14 +279,15 @@ class DiceParser:
                         dice_rolls.append(current_rolls)
                     elif operator is sqrt:
                         result = operator(val)
-                    elif operator is _keep_highest_dice:
+                    elif operator in [_keep_highest_dice, _keep_lowest_dice]:
                         if len(dice_rolls) == 0:
                             raise ValueError(
                                 "Unable to use keep without a dice roll.")
 
                         previous_total: Union[int,
                                               float] = dice_rolls[-1]['total']
-                        current_rolls = _keep_highest_dice(dice_rolls[-1], val)
+
+                        current_rolls = operator(dice_rolls[-1], val)
 
                         result += current_rolls['total'] - previous_total
                         dice_rolls[-1] = current_rolls

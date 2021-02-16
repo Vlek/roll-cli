@@ -94,6 +94,8 @@ def test_float_sides2():
 @pytest.mark.parametrize('equation,range_low,range_high', [
     ('10d6k1', 1, 6),
     ('4d6K3', 3, 18),
+    ('10d6K', 1, 6),
+    ('10d9k', 1, 9),
 ])
 def test_keep(equation: str, range_low: int, range_high: int):
     assert roll(equation) in range(range_low, range_high + 1)
