@@ -5,14 +5,13 @@
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://perso.crans.org/besson/LICENSE.html)
 
 <!-- Project Logo/Header -->
-<br/>
-
+<p align="center"><img src="https://user-images.githubusercontent.com/15008772/110541742-02522e00-80dd-11eb-944c-367bb3380cf9.png" width="80"/></p>
 <h3 align="center">PyRoll</h3>
 <p align="center">A CLI dice roller with all of the bells and whistles!</p>
 
 <!-- Table of Contents -->
 <h3>Table of Contents</h3>
-<ul>
+<ol>
   <li>
     <a href="#about">About</a>
     <ul>
@@ -32,7 +31,7 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
   </li>
-</ul>
+</ol>
 
 # About
 
