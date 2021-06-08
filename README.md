@@ -1,7 +1,7 @@
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 [![Build Status](https://travis-ci.org/Vlek/roll.svg?branch=master)](https://travis-ci.org/Vlek/roll)
 [![codecov](https://codecov.io/gh/Vlek/roll/branch/master/graph/badge.svg)](https://codecov.io/gh/Vlek/roll)
-[![HitCount](http://hits.dwyl.com/vlek/roll.svg)](http://hits.dwyl.com/vlek/roll)
+![Hits](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2Fvlek%2Froll)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://perso.crans.org/besson/LICENSE.html)
 
 <!-- Project Logo/Header -->
