@@ -25,12 +25,14 @@ Main ::= Expression
 Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 """
 
+from __future__ import annotations
+
 from enum import Enum
 from math import ceil, e, factorial, floor, pi, sqrt
 from operator import add, floordiv, mod, mul, sub, truediv
 from random import randint
 from sys import version_info
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 # TypedDict was added in 3.8.
 if version_info >= (3, 8):
@@ -39,21 +41,13 @@ else:
     from typing_extensions import TypedDict
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
-                       ParseException, ParserElement, ParseResults, oneOf,
-                       opAssoc, operatorPrecedence, pyparsing_common)
+                       ParseException, ParserElement, ParseResults,
+                       infixNotation, oneOf, opAssoc, pyparsing_common)
+
+from roll.evaluationresults import EvaluationResults
+from roll.rollresults import RollResults
 
 ParserElement.enablePackrat()
-
-
-class RollResults(TypedDict):
-    total: Union[int, float]
-    dice: str
-    rolls: List[Union[int, float]]
-
-
-class EvaluationResults(TypedDict):
-    total: Union[int, float]
-    rolls: List[RollResults]
 
 
 class RollOption(Enum):
@@ -148,20 +142,7 @@ def _keep_highest_dice(results: RollResults,
 class DiceParser:
     """Parser for evaluating dice strings."""
 
-    operations: Dict[
-        str,
-        Union[
-            Callable[
-                [
-                    Union[int, float],
-                    Union[int, float]
-                ], Union[int, float, RollResults]],
-            # This is needed for factorial and sqrt
-            Callable[
-                [Union[int, float]],
-                Union[int, float]
-            ]
-        ]] = {
+    operations = {
         "+": add,
         "-": sub,
         "*": mul,
@@ -177,11 +158,6 @@ class DiceParser:
         "sqrt": sqrt
     }
 
-    constants = {
-        "pi": pi,
-        "e": e
-    }
-
     def __init__(self: "DiceParser") -> None:
         """Initialize a parser to handle dice strings."""
         self._parser = self._create_parser()
@@ -190,36 +166,87 @@ class DiceParser:
     def _create_parser() -> Forward:
         """Create an instance of a dice roll string parser."""
         atom = (
-            CaselessLiteral("d%") |
+            CaselessLiteral("d%").setParseAction(lambda: _roll_dice(1, 100)) |
             pyparsing_common.number |
-            CaselessKeyword("pi") |
-            CaselessKeyword("e")
+            CaselessKeyword("pi").setParseAction(lambda: pi) |
+            CaselessKeyword("e").setParseAction(lambda: e)
         )
 
-        expression = operatorPrecedence(atom, [
-            (Literal('-'), 1, opAssoc.RIGHT),
-            (CaselessLiteral('sqrt'), 1, opAssoc.RIGHT),
-            (oneOf('^ **'), 2, opAssoc.RIGHT),
+        expression = infixNotation(atom, [
+            (Literal('-'), 1, opAssoc.RIGHT, DiceParser._handle_unary_minus),
+            (CaselessLiteral('sqrt'), 1, opAssoc.RIGHT,
+             DiceParser._handle_sqrt),
+            (oneOf('^ **'), 2, opAssoc.RIGHT, DiceParser._handle_expo),
 
-            (Literal('-'), 1, opAssoc.RIGHT),
-            (Literal('!'), 1, opAssoc.LEFT),
+            (Literal('-'), 1, opAssoc.RIGHT, DiceParser._handle_unary_minus),
+            (Literal('!'), 1, opAssoc.LEFT, DiceParser._handle_factorial),
 
-            (CaselessLiteral('d%'), 1, opAssoc.LEFT),
-            (CaselessLiteral('d'), 2, opAssoc.RIGHT),
-            (CaselessLiteral('k'), 2, opAssoc.LEFT),
-            (CaselessLiteral('k'), 1, opAssoc.LEFT),
+            (CaselessLiteral('d%'), 1, opAssoc.LEFT,
+             lambda toks: _roll_dice(toks[0][0], 100)),
+            (CaselessLiteral('d'), 2, opAssoc.RIGHT,
+             lambda toks: _roll_dice(toks[0][0], toks[0][2])),
+            (CaselessLiteral('k'), 2, opAssoc.LEFT, lambda toks: print(toks)),
+            (CaselessLiteral('k'), 1, opAssoc.LEFT, lambda toks: print(toks)),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
             # operand in this case.
-            (CaselessLiteral('d'), 1, opAssoc.RIGHT),
+            (CaselessLiteral('d'), 1, opAssoc.RIGHT,
+             lambda toks: _roll_dice(1, toks[0][1])),
 
-            (oneOf('* / % //'), 2, opAssoc.LEFT),
+            (oneOf('* / % //'), 2, opAssoc.LEFT,
+             DiceParser._handle_standard_operation),
 
-            (oneOf('+ -'), 2, opAssoc.LEFT),
+            (oneOf('+ -'), 2, opAssoc.LEFT,
+             DiceParser._handle_standard_operation),
         ])
 
         return expression
+
+    @staticmethod
+    def _handle_unary_minus(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        return -toks[0][1]
+
+    @staticmethod
+    def _handle_sqrt(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        value: Union[int, float, EvaluationResults] = toks[0][1]
+        result: Union[int, float] = sqrt(value)
+
+        if isinstance(value, EvaluationResults):
+            value.total = result
+            return value
+
+        return result
+
+    @staticmethod
+    def _handle_expo(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        return toks[0][0] ** toks[0][2]
+
+    @staticmethod
+    def _handle_factorial(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        return factorial(toks[0][0])
+
+    @staticmethod
+    def _handle_standard_operation(
+            toks: list[list[Union[str, int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+
+        operation_string: str = toks[0][1]
+
+        if operation_string not in DiceParser.operations:
+            raise Exception("Operator was not in valid operations")
+
+        op = DiceParser.operations[operation_string]
+
+        return op(toks[0][0], toks[0][2])
 
     def parse(self: "DiceParser", dice_string: str) -> List[Union[str, int]]:
         """Parse well-formed dice roll strings."""
@@ -237,7 +264,7 @@ class DiceParser:
         if isinstance(parsed_values, str):
             parsed_values = self.parse(parsed_values)
 
-        result: Union[int, float, None] = None
+        result: Union[int, float, EvaluationResults] = 0
         operator = None
         dice_rolls = []
 
@@ -248,17 +275,12 @@ class DiceParser:
             # handle constants and nested lists here because, after they
             # are evaluated, they are then used as values in the current
             # evaluation context.
-            if (
-                    isinstance(val, (int, float, ParseResults)) or
-                    val in self.constants
-            ):
-                if val in self.constants:
-                    val = self.constants[str(val)]
-                elif isinstance(val, ParseResults):
+            if (isinstance(val, (int, float,
+                                 ParseResults, EvaluationResults))):
+                if isinstance(val, ParseResults):
                     evaluation: EvaluationResults = self.evaluate(val,
                                                                   roll_option)
-                    val = evaluation['total']
-                    dice_rolls.extend(evaluation['rolls'])
+                    result += evaluation
 
                 if operator is not None:
                     # There are currently only two cases that could
@@ -277,8 +299,6 @@ class DiceParser:
 
                         result = current_rolls['total']
                         dice_rolls.append(current_rolls)
-                    elif operator is sqrt:
-                        result = operator(val)
                     elif operator in [_keep_highest_dice, _keep_lowest_dice]:
                         if len(dice_rolls) == 0:
                             raise ValueError(
@@ -298,27 +318,12 @@ class DiceParser:
                     result = val
 
             elif val in self.operations:
-
-                # Since factorials are unary and the value is to the left-
-                # hand side, we will execute the factorial function here
-                # as we do not have to wait for any further input.
-                if val == "!":
-                    result = factorial(result if result is not None else 0)
-                    continue
-
                 operator = self.operations[val]
 
-            elif val in ["D%", "d%"]:
-                current_rolls = _roll_dice(
-                    result if result is not None else 1, 100, roll_option)
-
-                result = current_rolls['total']
-                dice_rolls.append(current_rolls)
-
-        total_results: EvaluationResults = {
-            'total': result if result is not None else 0,
-            'rolls': dice_rolls
-        }
+        total_results: EvaluationResults = EvaluationResults(
+            result if result is not None else 0,
+            dice_rolls
+        )
 
         return total_results
 
