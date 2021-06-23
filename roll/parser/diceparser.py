@@ -27,10 +27,8 @@ Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 
 from __future__ import annotations
 
-from enum import Enum
-from math import ceil, e, factorial, floor, pi, sqrt
+from math import e, factorial, pi, sqrt
 from operator import add, floordiv, mod, mul, sub, truediv
-from random import randint
 from sys import version_info
 from typing import Callable, List, Optional, Union
 
@@ -43,107 +41,16 @@ else:
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, ParseResults,
                        infixNotation, oneOf, opAssoc, pyparsing_common)
-
 from roll.evaluationresults import EvaluationResults
-from roll.rollresults import RollResults
 
 ParserElement.enablePackrat()
-
-
-class RollOption(Enum):
-    Minimum = 0
-    Normal = 1
-    Maximum = 2
-
-
-def _roll_dice(
-        num_dice: Union[int, float],
-        sides: Union[int, float],
-        roll_option: RollOption = RollOption.Normal,
-        ) -> RollResults:
-    """Calculate value of dice roll notation."""
-    starting_num_dice = num_dice
-    starting_sides = sides
-
-    # If it's the case that we were given a dice with negative sides,
-    # then that doesn't mean anything in the real world. I cannot
-    # for the life of me figure out a possible scenario where that
-    # would make sense. We will just error out.
-    if sides < 0:
-        raise ValueError('The sides of a die must be positive or zero.')
-
-    result_is_negative = num_dice < 0
-
-    if result_is_negative:
-        num_dice = abs(num_dice)
-
-    sides = ceil(sides)
-
-    rolls: List[Union[int, float]] = []
-
-    if roll_option == RollOption.Minimum:
-        rolls = [1] * ceil(num_dice)
-    elif roll_option == RollOption.Maximum:
-        rolls = [floor(sides)] * floor(num_dice)
-
-        if isinstance(num_dice, float) and (num_dice % 1) != 0:
-            rolls.append(sides * (num_dice % 1))
-    elif sides != 0:
-        rolls = [randint(1, sides) for _ in range(floor(num_dice))]
-
-        # If it's the case that the number of dice is a float, then
-        # we take that to mean that it is a dice where the sides should
-        # be lowered to reflect the float amount.
-        #
-        # We do not want this to effect all dice rolls however, only the
-        # last one (or the only one if there's only a decimal portion).
-        if isinstance(num_dice, float) and (num_dice % 1) != 0:
-            sides = ceil(sides * (num_dice % 1))
-            rolls.append(randint(1, sides))
-
-    rolls_total = sum(rolls)
-
-    if result_is_negative:
-        rolls_total *= -1
-
-    result: RollResults = {
-        'total': rolls_total,
-        'dice': f'{starting_num_dice}d{starting_sides}',
-        'rolls': rolls
-    }
-
-    return result
-
-
-def _keep_lowest_dice(results: RollResults,
-                      k: Union[int, float] = 1) -> RollResults:
-    """Remove k number of lowest rolls from given RollResults."""
-    if len(results['rolls']) < k:
-        results['rolls'] = []
-        results['total'] = 0
-    else:
-        results['rolls'] = sorted(results['rolls'])[:ceil(k)]
-        results['total'] = sum(results['rolls'])
-    return results
-
-
-def _keep_highest_dice(results: RollResults,
-                       k: Union[int, float] = 1) -> RollResults:
-    """Trim the results of a roll based on the provided amount to keep."""
-    if len(results['rolls']) < k:
-        results['rolls'] = []
-        results['total'] = 0
-    else:
-        results['rolls'] = sorted(results['rolls'])[-ceil(k):]
-        results['total'] = sum(results['rolls'])
-    return results
 
 
 class DiceParser:
     """Parser for evaluating dice strings."""
 
-    operations = {
-        "+": add,
+    operations: Callable[[int, float, EvaluationResults], EvaluationResults] = {
+        "+": lambda x, y: EvaluationResults(add(x, y)),
         "-": sub,
         "*": mul,
         "/": truediv,
@@ -239,12 +146,12 @@ class DiceParser:
             toks: list[list[Union[str, int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
 
-        operation_string: str = toks[0][1]
+        operation_string: str = str(toks[0][1])
 
         if operation_string not in DiceParser.operations:
             raise Exception("Operator was not in valid operations")
 
-        op = DiceParser.operations[operation_string]
+        op: Callable[[int, float, EvaluationResults], EvaluationResults] = DiceParser.operations[operation_string]
 
         return op(toks[0][0], toks[0][2])
 
