@@ -42,6 +42,7 @@ from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, ParseResults,
                        infixNotation, oneOf, opAssoc, pyparsing_common)
 from roll.evaluationresults import EvaluationResults
+from roll.parser.operations import Operations
 
 ParserElement.enablePackrat()
 

@@ -7,14 +7,14 @@ from .rollresults import RollResults
 
 
 class Operators(Enum):
-    add = 0
-    sub = 1
-    mul = 2
-    truediv = 3
-    floordiv = 4
-    mod = 5
-    expo = 6
-    die = 7
+    add = "+"
+    sub = "-"
+    mul = "*"
+    truediv = "/"
+    floordiv = "//"
+    mod = "%"
+    expo = "^"
+    die = "d"
 
 
 class EvaluationResults():
