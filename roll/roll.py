@@ -36,12 +36,15 @@ def roll(expression: str = '',
     if expression.strip() == '':
         expression = "1d20"
 
-    result: EvaluationResults = _DICE_PARSER.evaluate(expression, roll_option)
+    result: Union[
+        int,
+        float,
+        EvaluationResults] = _DICE_PARSER.evaluate(expression, roll_option)
 
     if verbose:
         return result
 
-    return result.total
+    return result.total if isinstance(result, EvaluationResults) else result
 
 
 if __name__ == "__main__":

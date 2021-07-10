@@ -92,10 +92,26 @@ def test_float_sides2():
 
 
 @pytest.mark.parametrize('equation,range_low,range_high', [
-    ('10d6k1', 1, 6),
-    ('4d6K3', 3, 18),
+    # Implied number of dice, implied number to keep
+    ('d6K', 1, 6),
+    ('d10k', 1, 10),
+    ('d%k', 1, 100),
+
+    # Verbose dice, implied number to keep
     ('10d6K', 1, 6),
     ('10d9k', 1, 9),
+
+    # Implied number of dice, verbose number to keep
+    ('d100K1', 1, 100),
+    ('d1k5', 1, 1),
+
+    # Verbose dice, verbose keep
+    ('10d6k1', 1, 6),
+    ('4d6K3', 3, 18),
+
+    # Multiple keeps
+    ('10d5k4k3k2k1', 1, 5),
+    ('10d6K5k4', 1, 6),
 ])
 def test_keep(equation: str, range_low: int, range_high: int):
     assert roll(equation) in range(range_low, range_high + 1)

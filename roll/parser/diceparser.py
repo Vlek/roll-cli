@@ -87,16 +87,22 @@ class DiceParser:
              lambda toks: roll_dice(toks[0][0], 100)),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT,
              lambda toks: roll_dice(toks[0][0], toks[0][2])),
-            (CaselessLiteral('k'), 2, opAssoc.LEFT,
-             DiceParser._handle_keep_lowest),
-            (CaselessLiteral('k'), 1, opAssoc.LEFT,
-             DiceParser._handle_keep_highest),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
             # operand in this case.
             (CaselessLiteral('d'), 1, opAssoc.RIGHT,
              lambda toks: roll_dice(1, toks[0][1])),
+
+            # Keep notation
+            (Literal('k'), 2, opAssoc.LEFT,
+             DiceParser._handle_keep_lowest),
+            (Literal('K'), 2, opAssoc.LEFT,
+             DiceParser._handle_keep_highest),
+            (Literal('k'), 1, opAssoc.LEFT,
+             DiceParser._handle_keep_lowest),
+            (Literal('K'), 1, opAssoc.LEFT,
+             DiceParser._handle_keep_highest),
 
             # Multiplication and division
             (oneOf('* / % //'), 2, opAssoc.LEFT,
@@ -141,6 +147,7 @@ class DiceParser:
         if not isinstance(toks[0][0], EvaluationResults):
             raise Exception("Cannot use keep highest notation on a number.")
 
+        print(toks)
         left: EvaluationResults = toks[0][0]
         right: Union[int, float, EvaluationResults] = toks[0][2]
 
@@ -176,108 +183,73 @@ class DiceParser:
     def _handle_standard_operation(
             toks: list[list[Union[str, int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
-
         if isinstance(toks[0][0], str):
-            raise Exception("left value cannot be a string")
-        elif isinstance(toks[0][2], str):
-            raise Exception("right value cannot be a string")
+            raise Exception(f"left value cannot be a string: {toks}")
 
-        operation_string: str = str(toks[0][1])
+        # We initialize our result with the left-most value.
+        # As we perform operations, this value will be continuously
+        # updated and used as the left-hand side.
+        result: Union[int, float, EvaluationResults] = toks[0][0]
 
-        if operation_string not in DiceParser.OPERATIONS:
-            raise Exception("Operator was not in valid operations")
+        # Because we get things like [[1, "+", 2, "+", 3]], we have
+        # to be able to handle additional operations beyond a single
+        # left/right pair.
+        for pair in range(1, len(toks[0]), 2):
 
-        op: Callable[
-            [
-                Union[int, float, EvaluationResults],
-                Union[int, float, EvaluationResults]
-            ],
-            EvaluationResults
-        ] = DiceParser.OPERATIONS[operation_string]
+            if isinstance(toks[0][pair + 1], str):
+                raise Exception(f"right value cannot be a string: {toks}")
 
-        return op(toks[0][0], toks[0][2])
+            right: Union[int, float, EvaluationResults] = toks[0][pair + 1]
 
-    def parse(self: "DiceParser", dice_string: str) -> List[Union[str, int]]:
+            operation_string: str = str(toks[0][pair])
+
+            if operation_string not in DiceParser.OPERATIONS:
+                raise Exception(
+                    f"Operator was not in valid operations: {toks}")
+
+            op: Callable[
+                [
+                    Union[int, float, EvaluationResults],
+                    Union[int, float, EvaluationResults]
+                ],
+                EvaluationResults
+            ] = DiceParser.OPERATIONS[operation_string]
+
+            result = op(result, right)
+
+        return result
+
+    def parse(self: DiceParser,
+              dice_string: str,
+              roll_option: RollOption = RollOption.Normal
+              ) -> List[Union[int, float, EvaluationResults]]:
         """Parse well-formed dice roll strings."""
         try:
-            return self._parser.parseString(dice_string, parseAll=True)
+            result: List[
+                Union[
+                    int,
+                    float,
+                    EvaluationResults]
+            ] = self._parser.parseString(dice_string, parseAll=True)
         except ParseException:
             raise SyntaxError("Unable to parse input string: " + dice_string)
 
-    def evaluate(
-            self: "DiceParser",
-            parsed_values: Union[List[Union[str, int]], str],
-            roll_option: RollOption = RollOption.Normal,
-    ) -> EvaluationResults:
-        """Evaluate the output parsed values from roll strings."""
-        if isinstance(parsed_values, str):
-            parsed_values = self.parse(parsed_values)
+        if len(result) == 0:
+            raise Exception("Did not receive any value from evaluation")
+        elif len(result) > 1:
+            raise Exception(
+                f"Received more values than expected: {result}")
+        elif not all(isinstance(i, (int, float,
+                                EvaluationResults)) for i in result):
+            raise Exception(f"Unexpected types in output: {result}")
 
-        return parsed_values[0]
-        """
-        result: EvaluationResults = EvaluationResults()
-        operator = None
-        dice_rolls = []
+        return result
 
-        val: Union[str, int, float]
-        for val in parsed_values:
-
-            # In addition to dealing with values, we are also going to
-            # handle constants and nested lists here because, after they
-            # are evaluated, they are then used as values in the current
-            # evaluation context.
-            if (isinstance(val, (int, float,
-                                 ParseResults, EvaluationResults))):
-                if isinstance(val, ParseResults):
-                    evaluation: EvaluationResults = self.evaluate(val,
-                                                                  roll_option)
-                    result += evaluation
-
-                if operator is not None:
-                    # There are currently only two cases that could
-                    # cause result to be none, either we're dealing
-                    # with a dice roll that doesn't have a left-hand
-                    # number or a unary minus. In either case, we have
-                    # to initialize the result accordingly.
-                    if result is None:
-                        if operator is roll_dice:
-                            result = 1
-                        else:
-                            result = 0
-
-                    if operator is roll_dice:
-                        current_rolls = roll_dice(result, val, roll_option)
-
-                        result = current_rolls.total
-                        dice_rolls.append(current_rolls)
-                    elif operator in [_keep_highest_dice, _keep_lowest_dice]:
-                        if len(dice_rolls) == 0:
-                            raise ValueError(
-                                "Unable to use keep without a dice roll.")
-
-                        previous_total: Union[int,
-                                              float] = dice_rolls[-1].total()
-
-                        current_rolls = operator(dice_rolls[-1], val)
-
-                        result += current_rolls['total'] - previous_total
-                        dice_rolls[-1] = current_rolls
-
-                    else:
-                        result = operator(result, val)
-                else:
-                    result = val
-
-            elif val in self.operations:
-                operator = self.operations[val]
-
-        total_results: EvaluationResults = EvaluationResults(
-            result if result is not None else 0,
-            dice_rolls
-        )
-
-        return total_results
-        """
+    def evaluate(self: DiceParser,
+                 dice_string: str,
+                 roll_option: RollOption = RollOption.Normal,
+                 ) -> Union[int, float, EvaluationResults]:
+        return self.parse(dice_string, roll_option)[0]
 
 
 if __name__ == "__main__":
@@ -336,6 +308,5 @@ if __name__ == "__main__":
             parsed_string = parser.parse(rs)
 
             print(parsed_string)
-            print(parser.evaluate(parsed_string))
         except Exception as ex:
             print(f"Exception '{ex}' occured parsing: " + rs)

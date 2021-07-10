@@ -21,62 +21,62 @@ parser = dp.DiceParser()
 
 
 def test_interpret_number():
-    assert parser.evaluate('42')['total'] == 42
+    assert parser.evaluate('42') == 42
 
 
 def test_interpret_neg_number():
-    assert parser.evaluate('-64')['total'] == -64
+    assert parser.evaluate('-64') == -64
 
 
 def test_interpret_number_with_spaces():
-    assert parser.evaluate('       239      ')['total'] == 239
+    assert parser.evaluate('       239      ') == 239
 
 
 def test_float1():
-    assert parser.evaluate('1.0')['total'] == 1.0
+    assert parser.evaluate('1.0') == 1.0
 
 
 def test_float2():
-    assert parser.evaluate('3.1415')['total'] == 3.1415
+    assert parser.evaluate('3.1415') == 3.1415
 
 
 def test_float3():
     # I don't like this, but that's what pyparsing does.
-    assert parser.evaluate('9.')['total'] == 9.0
+    assert parser.evaluate('9.') == 9.0
 
 
 def test_float4():
     # I don't like this either, but it handles this.
-    assert parser.evaluate('.098')['total'] == 0.098
+    assert parser.evaluate('.098') == 0.098
 
 
 def test_neg_float1():
-    assert parser.evaluate('-2.0')['total'] == -2.0
+    assert parser.evaluate('-2.0') == -2.0
 
 
 def test_neg_float2():
-    assert parser.evaluate('-700.')['total'] == -700.0
+    assert parser.evaluate('-700.') == -700.0
 
 
 def test_interpret_dice():
-    assert parser.evaluate('d20')['total'] in range(1, 21)
+    assert parser.evaluate('d20') in range(1, 21)
 
 
 def test_interpret_dice2():
-    assert parser.evaluate('1d20')['total'] in range(1, 21)
+    assert parser.evaluate('1d20') in range(1, 21)
 
 
 def test_interpret_dice_with_spaces():
-    assert parser.evaluate('       2    d  8           ')['total'] in range(2, 17)
+    assert parser.evaluate('       2    d  8           ') in range(2, 17)
 
 
 def test_interpret_subtract_negative():
-    assert parser.evaluate('1 - -5')['total'] == 6
+    assert parser.evaluate('1 - -5') == 6
 
 
 # This test currently fails on the master branch as well.
 # def test_unary_negative():
-#     assert parser.evaluate('--10')['total'] == 10
+#     assert parser.evaluate('--10') == 10
 
 
 def test_bad_input1():

@@ -187,11 +187,9 @@ def roll_dice(
             # Not cryptographically secure
             rolls.append(randint(1, sides))  # noqa
 
-    rolls_total: Union[int, float] = sum(rolls)
-
-    # TODO: Shouldn't this instead make the individual rolls negative?
     if result_is_negative:
-        rolls_total *= -1
+        for roll_num in range(len(rolls)):
+            rolls[roll_num] = -rolls[roll_num]
 
     result.add_roll(
         RollResults(f'{starting_num_dice}d{starting_sides}', rolls))
