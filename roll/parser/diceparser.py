@@ -27,22 +27,15 @@ Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 
 from __future__ import annotations
 
-from math import e, factorial, pi, sqrt
-from operator import add, floordiv, mod, mul, sub, truediv
-from sys import version_info
-from typing import Callable, List, Optional, Union
-
-# TypedDict was added in 3.8.
-if version_info >= (3, 8):
-    from typing import TypedDict
-else:
-    from typing_extensions import TypedDict
+from math import e, factorial, pi
+from typing import Callable, Dict, List, Union
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
-                       ParseException, ParserElement, ParseResults,
-                       infixNotation, oneOf, opAssoc, pyparsing_common)
-from roll.evaluationresults import EvaluationResults
-from roll.parser.operations import Operations
+                       ParseException, ParserElement, infixNotation, oneOf,
+                       opAssoc, pyparsing_common)
+from roll.parser.operations import (add, expo, floor_div, mod, mult, roll_dice,
+                                    sqrt, sub, true_div)
+from roll.parser.types import EvaluationResults, RollOption
 
 ParserElement.enablePackrat()
 
@@ -50,20 +43,15 @@ ParserElement.enablePackrat()
 class DiceParser:
     """Parser for evaluating dice strings."""
 
-    operations: Callable[[int, float, EvaluationResults], EvaluationResults] = {
-        "+": lambda x, y: EvaluationResults(add(x, y)),
+    OPERATIONS: Dict[str, Callable] = {
+        "+": add,
         "-": sub,
-        "*": mul,
-        "/": truediv,
-        "//": floordiv,
+        "*": mult,
+        "/": true_div,
+        "//": floor_div,
         "%": mod,
-        "^": pow,
-        "**": pow,
-        "d": _roll_dice,
-        "k": _keep_lowest_dice,
-        "K": _keep_highest_dice,
-        "!": factorial,
-        "sqrt": sqrt
+        "^": expo,
+        "d": roll_dice,
     }
 
     def __init__(self: "DiceParser") -> None:
@@ -74,37 +62,47 @@ class DiceParser:
     def _create_parser() -> Forward:
         """Create an instance of a dice roll string parser."""
         atom = (
-            CaselessLiteral("d%").setParseAction(lambda: _roll_dice(1, 100)) |
+            CaselessLiteral("d%").setParseAction(lambda: roll_dice(1, 100)) |
             pyparsing_common.number |
             CaselessKeyword("pi").setParseAction(lambda: pi) |
             CaselessKeyword("e").setParseAction(lambda: e)
         )
 
         expression = infixNotation(atom, [
+            # Unary minus
             (Literal('-'), 1, opAssoc.RIGHT, DiceParser._handle_unary_minus),
+            # Square root
             (CaselessLiteral('sqrt'), 1, opAssoc.RIGHT,
              DiceParser._handle_sqrt),
+            # Exponents
             (oneOf('^ **'), 2, opAssoc.RIGHT, DiceParser._handle_expo),
 
+            # Unary minus (#2)
             (Literal('-'), 1, opAssoc.RIGHT, DiceParser._handle_unary_minus),
+            # Factorial
             (Literal('!'), 1, opAssoc.LEFT, DiceParser._handle_factorial),
 
+            # Dice notations
             (CaselessLiteral('d%'), 1, opAssoc.LEFT,
-             lambda toks: _roll_dice(toks[0][0], 100)),
+             lambda toks: roll_dice(toks[0][0], 100)),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT,
-             lambda toks: _roll_dice(toks[0][0], toks[0][2])),
-            (CaselessLiteral('k'), 2, opAssoc.LEFT, lambda toks: print(toks)),
-            (CaselessLiteral('k'), 1, opAssoc.LEFT, lambda toks: print(toks)),
+             lambda toks: roll_dice(toks[0][0], toks[0][2])),
+            (CaselessLiteral('k'), 2, opAssoc.LEFT,
+             DiceParser._handle_keep_lowest),
+            (CaselessLiteral('k'), 1, opAssoc.LEFT,
+             DiceParser._handle_keep_highest),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
             # operand in this case.
             (CaselessLiteral('d'), 1, opAssoc.RIGHT,
-             lambda toks: _roll_dice(1, toks[0][1])),
+             lambda toks: roll_dice(1, toks[0][1])),
 
+            # Multiplication and division
             (oneOf('* / % //'), 2, opAssoc.LEFT,
              DiceParser._handle_standard_operation),
 
+            # Addition and subtraction
             (oneOf('+ -'), 2, opAssoc.LEFT,
              DiceParser._handle_standard_operation),
         ])
@@ -119,16 +117,10 @@ class DiceParser:
 
     @staticmethod
     def _handle_sqrt(
-            toks: list[list[Union[int, float, EvaluationResults
-                                  ]]]) -> Union[int, float, EvaluationResults]:
-        value: Union[int, float, EvaluationResults] = toks[0][1]
-        result: Union[int, float] = sqrt(value)
-
-        if isinstance(value, EvaluationResults):
-            value.total = result
-            return value
-
-        return result
+            toks: list[list[Union[str, int, float, EvaluationResults
+                                  ]]]) -> EvaluationResults:
+        value: Union[int, float, EvaluationResults] = float(toks[0][1])
+        return sqrt(value)
 
     @staticmethod
     def _handle_expo(
@@ -143,16 +135,65 @@ class DiceParser:
         return factorial(toks[0][0])
 
     @staticmethod
+    def _handle_keep_highest(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        if not isinstance(toks[0][0], EvaluationResults):
+            raise Exception("Cannot use keep highest notation on a number.")
+
+        left: EvaluationResults = toks[0][0]
+        right: Union[int, float, EvaluationResults] = toks[0][2]
+
+        if isinstance(right, EvaluationResults):
+            left += right
+            left.total -= right.total
+            right = right.total
+
+        left.total -= left.rolls[-1].keep_highest(right)
+
+        return left
+
+    @staticmethod
+    def _handle_keep_lowest(
+            toks: list[list[Union[int, float, EvaluationResults
+                                  ]]]) -> Union[int, float, EvaluationResults]:
+        if not isinstance(toks[0][0], EvaluationResults):
+            raise Exception("Cannot use keep highest notation on a number.")
+
+        left: EvaluationResults = toks[0][0]
+        right: Union[int, float, EvaluationResults] = toks[0][2]
+
+        if isinstance(right, EvaluationResults):
+            left += right
+            left.total -= right.total
+            right = right.total
+
+        left.total -= left.rolls[-1].keep_lowest(right)
+
+        return left
+
+    @staticmethod
     def _handle_standard_operation(
             toks: list[list[Union[str, int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
 
+        if isinstance(toks[0][0], str):
+            raise Exception("left value cannot be a string")
+        elif isinstance(toks[0][2], str):
+            raise Exception("right value cannot be a string")
+
         operation_string: str = str(toks[0][1])
 
-        if operation_string not in DiceParser.operations:
+        if operation_string not in DiceParser.OPERATIONS:
             raise Exception("Operator was not in valid operations")
 
-        op: Callable[[int, float, EvaluationResults], EvaluationResults] = DiceParser.operations[operation_string]
+        op: Callable[
+            [
+                Union[int, float, EvaluationResults],
+                Union[int, float, EvaluationResults]
+            ],
+            EvaluationResults
+        ] = DiceParser.OPERATIONS[operation_string]
 
         return op(toks[0][0], toks[0][2])
 
@@ -172,11 +213,13 @@ class DiceParser:
         if isinstance(parsed_values, str):
             parsed_values = self.parse(parsed_values)
 
-        result: Union[int, float, EvaluationResults] = 0
+        return parsed_values[0]
+        """
+        result: EvaluationResults = EvaluationResults()
         operator = None
         dice_rolls = []
 
-        val: Union[str, int, float, Optional[float]]
+        val: Union[str, int, float]
         for val in parsed_values:
 
             # In addition to dealing with values, we are also going to
@@ -197,15 +240,15 @@ class DiceParser:
                     # number or a unary minus. In either case, we have
                     # to initialize the result accordingly.
                     if result is None:
-                        if operator is _roll_dice:
+                        if operator is roll_dice:
                             result = 1
                         else:
                             result = 0
 
-                    if operator is _roll_dice:
-                        current_rolls = _roll_dice(result, val, roll_option)
+                    if operator is roll_dice:
+                        current_rolls = roll_dice(result, val, roll_option)
 
-                        result = current_rolls['total']
+                        result = current_rolls.total
                         dice_rolls.append(current_rolls)
                     elif operator in [_keep_highest_dice, _keep_lowest_dice]:
                         if len(dice_rolls) == 0:
@@ -213,7 +256,7 @@ class DiceParser:
                                 "Unable to use keep without a dice roll.")
 
                         previous_total: Union[int,
-                                              float] = dice_rolls[-1]['total']
+                                              float] = dice_rolls[-1].total()
 
                         current_rolls = operator(dice_rolls[-1], val)
 
@@ -234,12 +277,13 @@ class DiceParser:
         )
 
         return total_results
+        """
 
 
 if __name__ == "__main__":
     parser = DiceParser()
 
-    # print("Recursive issues:", parser._parser.validate())
+    print("Recursive issues:", parser._parser.validate())
     roll_strings = [
         "5-3",
         "3-5",
@@ -287,10 +331,11 @@ if __name__ == "__main__":
 
     for rs in roll_strings:
         try:
+            print(rs)
+
             parsed_string = parser.parse(rs)
 
-            # print(rs)
-            # print(parsed_string)
+            print(parsed_string)
             print(parser.evaluate(parsed_string))
-        except Exception as e:
-            print(f"Exception '{e}' occured parsing: " + rs)
+        except Exception as ex:
+            print(f"Exception '{ex}' occured parsing: " + rs)

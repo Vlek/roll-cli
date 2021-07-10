@@ -15,7 +15,8 @@ etc.
 """
 from typing import Union
 
-from roll.diceparser import DiceParser, EvaluationResults, RollOption
+from roll.parser import DiceParser
+from roll.parser.types import EvaluationResults, RollOption
 
 _DICE_PARSER = DiceParser()
 
@@ -40,7 +41,7 @@ def roll(expression: str = '',
     if verbose:
         return result
 
-    return result['total']
+    return result.total
 
 
 if __name__ == "__main__":

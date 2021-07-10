@@ -12,6 +12,8 @@ from enum import Enum
 
 class RollOption(Enum):
     """
+    Enum for expressing dice roll behavior.
+
     Available roll options:
         Minimum: The dice will return the lowest possible roll.
             e.g. 1d6 -> 1
@@ -23,6 +25,7 @@ class RollOption(Enum):
         Maximum: The dice will return the highest possible roll.
             e.g. 1d6 -> 6
     """
+
     Minimum = 0
     Normal = 1
     Maximum = 2

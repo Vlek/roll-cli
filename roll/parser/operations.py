@@ -26,13 +26,12 @@ from math import sqrt as squareroot
 from random import randint
 from typing import List, Union
 
-from roll.parser.types.evaluationresults import EvaluationResults
-from roll.parser.types.rollresults import RollResults
-from roll.praser.types.rolloption import RollOption
+from roll.parser.types import EvaluationResults, RollOption, RollResults
 
 
-def _toEvalResults(
+def _to_eval_results(
         x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    """Change given object to an EvaluationResults object."""
     if not isinstance(x, EvaluationResults):
         x = EvaluationResults(x)
 
@@ -41,37 +40,45 @@ def _toEvalResults(
 
 def add(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x + y)
+    """Add x and y together with extended types."""
+    return _to_eval_results(x + y)
 
 
 def sub(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x - y)
+    """Subtract x and y together with extended types."""
+    return _to_eval_results(x - y)
 
 
 def mult(x: Union[int, float, EvaluationResults],
          y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x * y)
+    """Multiply x and y together with extended types."""
+    return _to_eval_results(x * y)
 
 
-def trueDiv(x: Union[int, float, EvaluationResults],
-            y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x / y)
-
-
-def floorDiv(x: Union[int, float, EvaluationResults],
+def true_div(x: Union[int, float, EvaluationResults],
              y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x // y)
+    """Divide (true) x and y with extended types."""
+    return _to_eval_results(x / y)
+
+
+def floor_div(x: Union[int, float, EvaluationResults],
+              y: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    """Divide (floor) x and y with extended types."""
+    return _to_eval_results(x // y)
 
 
 def mod(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x % y)
+    """Divide (modulus) x and y with extended types."""
+    # We get a false positive here for modulus string op
+    return _to_eval_results(x % y)  # noqa: S001
 
 
 def expo(x: Union[int, float, EvaluationResults],
          y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    return _toEvalResults(x ** y)
+    """Exponentiate x by y with extended types."""
+    return _to_eval_results(x ** y)
 
 
 def factorial(
@@ -85,7 +92,6 @@ def factorial(
         float: The value is ceil'd and then passed as an int.
         EvaluationResults: The total is ceil'd and passed.
     """
-
     result: Union[int, EvaluationResults]
 
     if isinstance(x, EvaluationResults):
@@ -94,13 +100,11 @@ def factorial(
     else:
         result = fact(ceil(x))
 
-    return _toEvalResults(result)
+    return _to_eval_results(result)
 
 
 def sqrt(x: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    """
-    Get the squareroot of the given number and return an EvaluationResults.
-    """
+    """Perform sqrt on x with extended types."""
     result: Union[int, float, EvaluationResults]
 
     if isinstance(x, EvaluationResults):
@@ -109,7 +113,7 @@ def sqrt(x: Union[int, float, EvaluationResults]) -> EvaluationResults:
     else:
         result = squareroot(x)
 
-    return _toEvalResults(result)
+    return _to_eval_results(result)
 
 
 def roll_dice(
@@ -129,16 +133,14 @@ def roll_dice(
     # and sides values, we do not include the totals in the final
     # value.
     if isinstance(num_dice, EvaluationResults):
-        result = num_dice
+        result += num_dice
         num_dice = num_dice.total
-        if isinstance(sides, EvaluationResults):
-            result += sides
-            sides = sides.total
-        result.total = 0
-    elif isinstance(sides, EvaluationResults):
-        result = sides
+
+    if isinstance(sides, EvaluationResults):
+        result += sides
         sides = sides.total
-        result.total = 0
+
+    result.total = 0
 
     starting_num_dice: Union[int, float] = num_dice
     starting_sides: Union[int, float] = sides
@@ -170,7 +172,9 @@ def roll_dice(
         if isinstance(num_dice, float) and (num_dice % 1) != 0:
             rolls.append(sides * (num_dice % 1))
     elif sides != 0:
-        rolls = [randint(1, sides) for _ in range(floor(num_dice))]
+        # Because this is not cryptographically secure, we have to noqa it
+        # otherwise we get an S311 warning.
+        rolls = [randint(1, sides) for _ in range(floor(num_dice))]  # noqa
 
         # If it's the case that the number of dice is a float, then
         # we take that to mean that it is a dice where the sides should
@@ -180,7 +184,8 @@ def roll_dice(
         # last one (or the only one if there's only a decimal portion).
         if isinstance(num_dice, float) and (num_dice % 1) != 0:
             sides = ceil(sides * (num_dice % 1))
-            rolls.append(randint(1, sides))
+            # Not cryptographically secure
+            rolls.append(randint(1, sides))  # noqa
 
     rolls_total: Union[int, float] = sum(rolls)
 
@@ -188,12 +193,8 @@ def roll_dice(
     if result_is_negative:
         rolls_total *= -1
 
-    result.add_roll({
-        # TODO: Do we really need a total? This can get out of sync.
-        'total': rolls_total,
-        'dice': f'{starting_num_dice}d{starting_sides}',
-        'rolls': rolls
-    })
+    result.add_roll(
+        RollResults(f'{starting_num_dice}d{starting_sides}', rolls))
 
     return result
 
@@ -201,14 +202,10 @@ def roll_dice(
 def keep_lowest_dice(results: EvaluationResults,
                      k: Union[int, float] = 1) -> EvaluationResults:
     """Remove k number of lowest rolls from last roll."""
-    if len(EvaluationResults.rolls) == 0:
+    if len(results.rolls) == 0:
         return results
 
-    last_roll = EvaluationResults.rolls[-1]
-
-    if len(last_roll['rolls']) > k:
-        last_roll['rolls'] = sorted(last_roll['rolls'])[:ceil(k)]
-        last_roll['total'] = sum(last_roll['rolls'])
+    results.rolls[-1].keep_lowest(k)
 
     return results
 
@@ -219,10 +216,6 @@ def keep_highest_dice(results: EvaluationResults,
     if len(EvaluationResults.rolls) == 0:
         return results
 
-    last_roll = EvaluationResults.rolls[-1]
-
-    if len(last_roll['rolls']) > k:
-        last_roll['rolls'] = sorted(last_roll['rolls'])[-ceil(k):]
-        last_roll['total'] = sum(last_roll['rolls'])
+    results.rolls[-1].keep_highest(k)
 
     return results

@@ -35,4 +35,4 @@ requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
-roll = 'roll.click_dice:roll_cli'
+roll = 'roll.click.click_dice:roll_cli'

@@ -1,7 +1,7 @@
 
 # from roll import roll
 import pytest
-import roll.diceparser as dp
+import roll.parser.diceparser as dp
 from pyparsing import ParseException
 
 parser = dp.DiceParser()
