@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyroll"
-version = "2.0.0"
+version = "2.1.0"
 description = "Dice roller with all of the features you could want."
 authors = ["Derek 'Vlek' McCammond <dmccammond25@gmail.com>"]
 license = "gpl-3.0"
@@ -35,4 +35,4 @@ requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
-roll = 'roll.click_dice:roll_cli'
+roll = 'roll.click.click_dice:roll_cli'

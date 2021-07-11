@@ -1,6 +1,6 @@
 
 from click.testing import CliRunner
-from roll.click_dice import roll_cli
+from roll.click.click_dice import roll_cli
 
 runner = CliRunner()
 

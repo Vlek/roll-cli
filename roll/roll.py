@@ -15,11 +15,12 @@ etc.
 """
 from typing import Union
 
-from roll.diceparser import DiceParser, EvaluationResults, RollOption
+from roll.parser import DiceParser
+from roll.parser.types import EvaluationResults, RollOption
 
 _DICE_PARSER = DiceParser()
 
-GOOD_CHARS: str = "0123456789d-/*() %+.!^piesqrt"
+GOOD_CHARS: str = "0123456789d-/*() %+.!^pPiIeEsSqQrRtTkK"
 
 
 def roll(expression: str = '',
@@ -35,12 +36,15 @@ def roll(expression: str = '',
     if expression.strip() == '':
         expression = "1d20"
 
-    result: EvaluationResults = _DICE_PARSER.evaluate(expression, roll_option)
+    result: Union[
+        int,
+        float,
+        EvaluationResults] = _DICE_PARSER.evaluate(expression, roll_option)
 
     if verbose:
         return result
 
-    return result['total']
+    return result.total if isinstance(result, EvaluationResults) else result
 
 
 if __name__ == "__main__":

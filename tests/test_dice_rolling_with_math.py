@@ -1,6 +1,9 @@
 
+from typing import Union
+
 import pytest
 from roll import roll
+from roll.parser.types import EvaluationResults
 
 
 def test_d6_plus_d8():
@@ -41,6 +44,10 @@ def test_dice_expo1():
 ])
 def test_dice_sqrt(equation: str, range_low: int, range_high: int):
     result = roll(equation, verbose=True)
-    print(result)
-    total = result['total']
+
+    if isinstance(result, EvaluationResults):
+        total: Union[int, float] = result.total
+    else:
+        total = result
+
     assert total in range(range_low, range_high + 1)
