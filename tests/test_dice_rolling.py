@@ -111,7 +111,7 @@ def test_float_sides2():
 
     # Multiple keeps
     ('10d5k4k3k2k1', 1, 5),
-    ('10d6K5k4', 1, 6),
+    ('10d6K5k4', 4, 24),
 ])
 def test_keep(equation: str, range_low: int, range_high: int):
     assert roll(equation) in range(range_low, range_high + 1)

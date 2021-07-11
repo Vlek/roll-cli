@@ -28,6 +28,8 @@ from typing import List, Union
 
 from roll.parser.types import EvaluationResults, RollOption, RollResults
 
+ROLL_TYPE: RollOption = RollOption.Normal
+
 
 def _to_eval_results(
         x: Union[int, float, EvaluationResults]) -> EvaluationResults:
@@ -123,6 +125,9 @@ def roll_dice(
         ) -> EvaluationResults:
     """Calculate value of dice roll notation."""
     result: EvaluationResults = EvaluationResults()
+
+    global ROLL_TYPE
+    roll_option = ROLL_TYPE
 
     # In order to ensure our types later on, we are going to first
     # take out all of the EvaluationResults objects and take their

@@ -33,9 +33,9 @@ from typing import Callable, Dict, List, Union
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, infixNotation, oneOf,
                        opAssoc, pyparsing_common)
-from roll.parser.operations import (add, expo, floor_div, mod, mult, roll_dice,
-                                    sqrt, sub, true_div)
-from roll.parser.types import EvaluationResults, RollOption
+from roll.parser.operations import (ROLL_TYPE, add, expo, floor_div, mod, mult,
+                                    roll_dice, sqrt, sub, true_div)
+from roll.parser.types import EvaluationResults, RollOption, RollResults
 
 ParserElement.enablePackrat()
 
@@ -62,7 +62,8 @@ class DiceParser:
     def _create_parser() -> Forward:
         """Create an instance of a dice roll string parser."""
         atom = (
-            CaselessLiteral("d%").setParseAction(lambda: roll_dice(1, 100)) |
+            CaselessLiteral("d%").setParseAction(
+                lambda: DiceParser._handle_roll(1, 100)) |
             pyparsing_common.number |
             CaselessKeyword("pi").setParseAction(lambda: pi) |
             CaselessKeyword("e").setParseAction(lambda: e)
@@ -74,6 +75,7 @@ class DiceParser:
             # Square root
             (CaselessLiteral('sqrt'), 1, opAssoc.RIGHT,
              DiceParser._handle_sqrt),
+
             # Exponents
             (oneOf('^ **'), 2, opAssoc.RIGHT, DiceParser._handle_expo),
 
@@ -84,25 +86,21 @@ class DiceParser:
 
             # Dice notations
             (CaselessLiteral('d%'), 1, opAssoc.LEFT,
-             lambda toks: roll_dice(toks[0][0], 100)),
+             lambda toks: DiceParser._handle_roll(toks[0][0], 100)),
             (CaselessLiteral('d'), 2, opAssoc.RIGHT,
-             lambda toks: roll_dice(toks[0][0], toks[0][2])),
+             lambda toks: DiceParser._handle_roll(toks[0][0], toks[0][2])),
 
             # This line causes the recursion debug to go off.
             # Will have to find a way to have an optional left
             # operand in this case.
             (CaselessLiteral('d'), 1, opAssoc.RIGHT,
-             lambda toks: roll_dice(1, toks[0][1])),
+             lambda toks: DiceParser._handle_roll(1, toks[0][1])),
 
             # Keep notation
-            (Literal('k'), 2, opAssoc.LEFT,
-             DiceParser._handle_keep_lowest),
-            (Literal('K'), 2, opAssoc.LEFT,
-             DiceParser._handle_keep_highest),
-            (Literal('k'), 1, opAssoc.LEFT,
-             DiceParser._handle_keep_lowest),
-            (Literal('K'), 1, opAssoc.LEFT,
-             DiceParser._handle_keep_highest),
+            (oneOf('k K'), 2, opAssoc.LEFT,
+             DiceParser._handle_keep),
+            (oneOf('k K'), 1, opAssoc.LEFT,
+             DiceParser._handle_keep),
 
             # Multiplication and division
             (oneOf('* / % //'), 2, opAssoc.LEFT,
@@ -111,7 +109,10 @@ class DiceParser:
             # Addition and subtraction
             (oneOf('+ -'), 2, opAssoc.LEFT,
              DiceParser._handle_standard_operation),
-        ])
+
+            # TODO: Use this to make a pretty exception message
+            # where we point out and explain the issue.
+        ]).setFailAction(lambda s, loc, expr, err: print(err))
 
         return expression
 
@@ -136,70 +137,96 @@ class DiceParser:
 
     @staticmethod
     def _handle_factorial(
-            toks: list[list[Union[int, float, EvaluationResults
+            toks: List[List[Union[int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
         return factorial(toks[0][0])
 
     @staticmethod
-    def _handle_keep_highest(
-            toks: list[list[Union[int, float, EvaluationResults
-                                  ]]]) -> Union[int, float, EvaluationResults]:
-        if not isinstance(toks[0][0], EvaluationResults):
-            raise Exception("Cannot use keep highest notation on a number.")
-
-        print(toks)
-        left: EvaluationResults = toks[0][0]
-        right: Union[int, float, EvaluationResults] = toks[0][2]
-
-        if isinstance(right, EvaluationResults):
-            left += right
-            left.total -= right.total
-            right = right.total
-
-        left.total -= left.rolls[-1].keep_highest(right)
-
-        return left
+    def _handle_roll(sides: Union[int, float, EvaluationResults],
+                     num: Union[int, float, EvaluationResults]
+                     ) -> Union[int, float, EvaluationResults]:
+        roll_option = ROLL_TYPE
+        return roll_dice(sides, num, roll_option)
 
     @staticmethod
-    def _handle_keep_lowest(
-            toks: list[list[Union[int, float, EvaluationResults
+    def _handle_keep(
+            toks: List[List[Union[int, float, EvaluationResults, str
                                   ]]]) -> Union[int, float, EvaluationResults]:
-        if not isinstance(toks[0][0], EvaluationResults):
-            raise Exception("Cannot use keep highest notation on a number.")
+        tokens: List[Union[int, float,
+                           EvaluationResults, str]] = toks[0]
 
-        left: EvaluationResults = toks[0][0]
-        right: Union[int, float, EvaluationResults] = toks[0][2]
+        if not isinstance(tokens[0], EvaluationResults):
+            raise Exception("Left value must contain a dice roll.")
 
-        if isinstance(right, EvaluationResults):
-            left += right
-            left.total -= right.total
-            right = right.total
+        # We initialize our result with the left-most value.
+        # As we perform operations, this value will be continuously
+        # updated and used as the left-hand side.
+        result: EvaluationResults = tokens[0]
 
-        left.total -= left.rolls[-1].keep_lowest(right)
+        # If it's the case that we have an implied keep amount, we
+        # need to manually add it to the end here.
+        if len(tokens) % 2 == 0:
+            tokens.append(1)
 
-        return left
+        # Because we get things like [[1, "+", 2, "+", 3]], we have
+        # to be able to handle additional operations beyond a single
+        # left/right pair.
+        for i in range(1, len(tokens), 2):
+
+            op_index = i
+            right_index = i + 1
+
+            operation_string: str = str(tokens[op_index])
+
+            if operation_string not in ['K', 'k']:
+                raise Exception(
+                    f"Operator at index {op_index} was "
+                    f"not in valid operations: {toks}")
+
+            right: Union[EvaluationResults, float, int,
+                         str] = tokens[right_index]
+
+            if isinstance(right, str):
+                raise Exception(f"right value cannot be a string: {toks}")
+            elif isinstance(right, EvaluationResults):
+                result += right
+                result.total -= right.total
+                right = right.total
+
+            last_roll: RollResults = result.rolls[-1]
+            lower_total_by: Union[int, float] = 0
+
+            if operation_string == 'k':
+                lower_total_by = last_roll.keep_lowest(right)
+            else:
+                lower_total_by = last_roll.keep_highest(right)
+
+            result.total -= lower_total_by
+
+        return result
 
     @staticmethod
     def _handle_standard_operation(
             toks: list[list[Union[str, int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
-        if isinstance(toks[0][0], str):
-            raise Exception(f"left value cannot be a string: {toks}")
-
         # We initialize our result with the left-most value.
         # As we perform operations, this value will be continuously
         # updated and used as the left-hand side.
-        result: Union[int, float, EvaluationResults] = toks[0][0]
+        result: Union[int, float, EvaluationResults, str] = toks[0][0]
+
+        if isinstance(result, str):
+            raise Exception(f"left value cannot be a string: {toks}")
 
         # Because we get things like [[1, "+", 2, "+", 3]], we have
         # to be able to handle additional operations beyond a single
         # left/right pair.
         for pair in range(1, len(toks[0]), 2):
 
-            if isinstance(toks[0][pair + 1], str):
-                raise Exception(f"right value cannot be a string: {toks}")
+            right: Union[int, float,
+                         EvaluationResults, str] = toks[0][pair + 1]
 
-            right: Union[int, float, EvaluationResults] = toks[0][pair + 1]
+            if isinstance(right, str):
+                raise Exception(f"right value cannot be a string: {toks}")
 
             operation_string: str = str(toks[0][pair])
 
@@ -249,64 +276,5 @@ class DiceParser:
                  dice_string: str,
                  roll_option: RollOption = RollOption.Normal,
                  ) -> Union[int, float, EvaluationResults]:
+        """Parse and evaluate the given dice string."""
         return self.parse(dice_string, roll_option)[0]
-
-
-if __name__ == "__main__":
-    parser = DiceParser()
-
-    print("Recursive issues:", parser._parser.validate())
-    roll_strings = [
-        "5-3",
-        "3-5",
-        "3--5",
-        "1d2d3",
-        "5^2d1",
-        "0!d20",
-        "5 + 2!",
-        "5**(2)",
-        "5**2 * 7",
-        "2 + 5 d   6",
-        "(2)d6",
-        "2d(6)",
-        "3",
-        "-3",
-        "--3",
-        "100.",
-        "1 2",
-        "--7",
-        "9.0",
-        "-12.05",
-        "1 + 2",
-        "2 - 1",
-        "100 - 3",
-        "12 // 4",
-        "3+2*4",
-        "2^4",
-        "3 + 2 * 2^1",
-        "9-1+27+(3-5)+9",
-        "1d%",
-        "d%",
-        "D%",
-        "1d20",
-        "d20",
-        "d20 + 5",
-        "2d6 + 1d8 + 4",
-        "5!",
-        "pi",
-        "pi + 2",
-        "pi * e",
-        "(2 + 8 / (9 - 5)) * 3",
-        "100 - 21 / 7",
-        "((((((3))))))",
-    ]
-
-    for rs in roll_strings:
-        try:
-            print(rs)
-
-            parsed_string = parser.parse(rs)
-
-            print(parsed_string)
-        except Exception as ex:
-            print(f"Exception '{ex}' occured parsing: " + rs)
