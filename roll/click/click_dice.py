@@ -15,7 +15,6 @@ etc.
 
 from typing import List, Union
 
-import roll.parser.operations as ops
 from roll import roll
 from roll.parser.types import EvaluationResults, RollOption
 
@@ -58,11 +57,6 @@ def roll_cli(expression: List[str] = None,
     """
     command_input = ' '.join(expression) if expression is not None else ''
 
-    # Because of how we are now evaluating during parsing, we have to go back
-    # to the old way of having some globalish variable for handing off the
-    # type of roll that we're attempting to do.
-    ops.ROLL_TYPE = roll_option
-
     result: Union[int, float, EvaluationResults] = roll(
         command_input, verbose, roll_option,
     )
@@ -73,8 +67,6 @@ def roll_cli(expression: List[str] = None,
                 f"{r.dice}: {r.rolls}"
             )
 
-        click.echo(result.total)
-    elif isinstance(result, EvaluationResults):
         click.echo(result.total)
     else:
         click.echo(result)

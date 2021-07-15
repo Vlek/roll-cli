@@ -109,7 +109,7 @@ class EvaluationResults():
     def __eq__(self: EvaluationResults, other: object) -> bool:
         """Return whether or not a given value is numerically equal."""
         if not isinstance(other, (int, float, EvaluationResults)):
-            return NotImplemented
+            return False
 
         if isinstance(other, (int, float)):
             return other == self.total
@@ -171,11 +171,10 @@ class EvaluationResults():
         """Subtract a given value from the evaluation result total."""
         self.last_operation = Operators.sub
 
+        # We don't have to compare for EvaluationResults because that will
+        # use __sub__ instead!
         if isinstance(x, (int, float)):
             self.total = x - self.total
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total = x.total - self.total
         else:
             raise TypeError("The supplied type is not valid: " + type(x))
 
@@ -234,11 +233,10 @@ class EvaluationResults():
         """Divide the evaluation result total by a given number."""
         self.last_operation = Operators.truediv
 
+        # We do not have to check for EvaluationResults, those will
+        # be handled by __truediv__!
         if isinstance(x, (int, float)):
             self.total = x / self.total
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total = x.total / self.total
         else:
             raise TypeError("The supplied type is not valid: " + type(x))
 
@@ -272,11 +270,10 @@ class EvaluationResults():
         """Divide the evaluation result total by a given number and floor."""
         self.last_operation = Operators.floordiv
 
+        # We do not have to check for EvaluationResults, those will be
+        # handled by __floordiv__!
         if isinstance(x, (int, float)):
             self.total = x // self.total
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total = x.total // self.total
         else:
             raise TypeError("The supplied type is not valid: " + type(x))
 
@@ -307,13 +304,13 @@ class EvaluationResults():
         """Perform modulus divison on the evaluation total with given value."""
         self.last_operation = Operators.mod
 
+        # We do not have to check for EvaluationResults, those will be
+        # handled by __mod__!
         if isinstance(x, (int, float)):
             self.total = float(x) % self.total
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total = x.total % self.total
         else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+            raise TypeError(
+                "The supplied type is not valid: " + str(type(x)))
 
         return self
 
@@ -328,7 +325,8 @@ class EvaluationResults():
             self._collect_rolls(x)
             self.total **= x.total
         else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+            raise TypeError(
+                "The supplied type is not valid: " + str(type(x)))
 
         return self
 
@@ -342,11 +340,10 @@ class EvaluationResults():
         """Exponentiate the evaluation results by the given value."""
         self.last_operation = Operators.expo
 
+        # We do not have to check for EvaluationResults, those will be
+        # handled by __pow__!
         if isinstance(x, (int, float)):
             self.total = x ** self.total
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total = x.total ** self.total
         else:
             raise TypeError("The supplied type is not valid: " + type(x))
 

@@ -27,14 +27,14 @@ Website used to do railroad diagrams: https://www.bottlecaps.de/rr/ui
 
 from __future__ import annotations
 
-from math import e, factorial, pi
+from math import e, pi
 from typing import Callable, Dict, List, Union
 
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, infixNotation, oneOf,
                        opAssoc, pyparsing_common)
-from roll.parser.operations import (ROLL_TYPE, add, expo, floor_div, mod, mult,
-                                    roll_dice, sqrt, sub, true_div)
+from roll.parser.operations import (ROLL_TYPE, add, factorial, floor_div, mod,
+                                    mult, roll_dice, sqrt, sub, true_div)
 from roll.parser.types import EvaluationResults, RollOption, RollResults
 
 ParserElement.enablePackrat()
@@ -50,7 +50,6 @@ class DiceParser:
         "/": true_div,
         "//": floor_div,
         "%": mod,
-        "^": expo,
         "d": roll_dice,
     }
 
@@ -126,7 +125,13 @@ class DiceParser:
     def _handle_sqrt(
             toks: list[list[Union[str, int, float, EvaluationResults
                                   ]]]) -> EvaluationResults:
-        value: Union[int, float, EvaluationResults] = float(toks[0][1])
+
+        value: Union[int, float, EvaluationResults, str] = toks[0][1]
+
+        if not isinstance(value, (int, float, EvaluationResults)):
+            raise TypeError(
+                "The given value must be int, float, or EvaluationResults")
+
         return sqrt(value)
 
     @staticmethod
@@ -145,6 +150,7 @@ class DiceParser:
     def _handle_roll(sides: Union[int, float, EvaluationResults],
                      num: Union[int, float, EvaluationResults]
                      ) -> Union[int, float, EvaluationResults]:
+        global ROLL_TYPE
         roll_option = ROLL_TYPE
         return roll_dice(sides, num, roll_option)
 
@@ -156,7 +162,7 @@ class DiceParser:
                            EvaluationResults, str]] = toks[0]
 
         if not isinstance(tokens[0], EvaluationResults):
-            raise Exception("Left value must contain a dice roll.")
+            raise TypeError("Left value must contain a dice roll.")
 
         # We initialize our result with the left-most value.
         # As we perform operations, this value will be continuously
@@ -178,17 +184,10 @@ class DiceParser:
 
             operation_string: str = str(tokens[op_index])
 
-            if operation_string not in ['K', 'k']:
-                raise Exception(
-                    f"Operator at index {op_index} was "
-                    f"not in valid operations: {toks}")
-
             right: Union[EvaluationResults, float, int,
                          str] = tokens[right_index]
 
-            if isinstance(right, str):
-                raise Exception(f"right value cannot be a string: {toks}")
-            elif isinstance(right, EvaluationResults):
+            if isinstance(right, EvaluationResults):
                 result += right
                 result.total -= right.total
                 right = right.total
@@ -197,9 +196,9 @@ class DiceParser:
             lower_total_by: Union[int, float] = 0
 
             if operation_string == 'k':
-                lower_total_by = last_roll.keep_lowest(right)
+                lower_total_by = last_roll.keep_lowest(float(right))
             else:
-                lower_total_by = last_roll.keep_highest(right)
+                lower_total_by = last_roll.keep_highest(float(right))
 
             result.total -= lower_total_by
 
@@ -214,9 +213,6 @@ class DiceParser:
         # updated and used as the left-hand side.
         result: Union[int, float, EvaluationResults, str] = toks[0][0]
 
-        if isinstance(result, str):
-            raise Exception(f"left value cannot be a string: {toks}")
-
         # Because we get things like [[1, "+", 2, "+", 3]], we have
         # to be able to handle additional operations beyond a single
         # left/right pair.
@@ -225,14 +221,7 @@ class DiceParser:
             right: Union[int, float,
                          EvaluationResults, str] = toks[0][pair + 1]
 
-            if isinstance(right, str):
-                raise Exception(f"right value cannot be a string: {toks}")
-
             operation_string: str = str(toks[0][pair])
-
-            if operation_string not in DiceParser.OPERATIONS:
-                raise Exception(
-                    f"Operator was not in valid operations: {toks}")
 
             op: Callable[
                 [
@@ -251,6 +240,8 @@ class DiceParser:
               roll_option: RollOption = RollOption.Normal
               ) -> List[Union[int, float, EvaluationResults]]:
         """Parse well-formed dice roll strings."""
+        global ROLL_TYPE
+        ROLL_TYPE = roll_option
         try:
             result: List[
                 Union[
@@ -260,15 +251,6 @@ class DiceParser:
             ] = self._parser.parseString(dice_string, parseAll=True)
         except ParseException:
             raise SyntaxError("Unable to parse input string: " + dice_string)
-
-        if len(result) == 0:
-            raise Exception("Did not receive any value from evaluation")
-        elif len(result) > 1:
-            raise Exception(
-                f"Received more values than expected: {result}")
-        elif not all(isinstance(i, (int, float,
-                                EvaluationResults)) for i in result):
-            raise Exception(f"Unexpected types in output: {result}")
 
         return result
 
