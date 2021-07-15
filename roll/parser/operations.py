@@ -77,12 +77,6 @@ def mod(x: Union[int, float, EvaluationResults],
     return _to_eval_results(x % y)  # noqa: S001
 
 
-def expo(x: Union[int, float, EvaluationResults],
-         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
-    """Exponentiate x by y with extended types."""
-    return _to_eval_results(x ** y)
-
-
 def factorial(
         x: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """
@@ -126,9 +120,6 @@ def roll_dice(
     """Calculate value of dice roll notation."""
     result: EvaluationResults = EvaluationResults()
 
-    global ROLL_TYPE
-    roll_option = ROLL_TYPE
-
     # In order to ensure our types later on, we are going to first
     # take out all of the EvaluationResults objects and take their
     # totals to be used down the line. Their history will be used
@@ -169,9 +160,6 @@ def roll_dice(
     if roll_option == RollOption.Minimum:
         rolls = [1] * ceil(num_dice)
     elif roll_option == RollOption.Maximum:
-        # TODO: Ensure that this logic is correct. I am not sure that
-        # we want to floor either of these numbers.
-        # Example: 1.5d5.5 maxed should be the max of 1.5d6, or 9.
         rolls = [floor(sides)] * floor(num_dice)
 
         if isinstance(num_dice, float) and (num_dice % 1) != 0:
@@ -179,7 +167,7 @@ def roll_dice(
     elif sides != 0:
         # Because this is not cryptographically secure, we have to noqa it
         # otherwise we get an S311 warning.
-        rolls = [randint(1, sides) for _ in range(floor(num_dice))]  # noqa
+        rolls = [randint(1, floor(sides)) for _ in range(floor(num_dice))]  # noqa
 
         # If it's the case that the number of dice is a float, then
         # we take that to mean that it is a dice where the sides should
@@ -187,7 +175,7 @@ def roll_dice(
         #
         # We do not want this to effect all dice rolls however, only the
         # last one (or the only one if there's only a decimal portion).
-        if isinstance(num_dice, float) and (num_dice % 1) != 0:
+        if isinstance(num_dice, float) and num_dice % 1 != 0:
             sides = ceil(sides * (num_dice % 1))
             # Not cryptographically secure
             rolls.append(randint(1, sides))  # noqa
@@ -200,25 +188,3 @@ def roll_dice(
         RollResults(f'{starting_num_dice}d{starting_sides}', rolls))
 
     return result
-
-
-def keep_lowest_dice(results: EvaluationResults,
-                     k: Union[int, float] = 1) -> EvaluationResults:
-    """Remove k number of lowest rolls from last roll."""
-    if len(results.rolls) == 0:
-        return results
-
-    results.rolls[-1].keep_lowest(k)
-
-    return results
-
-
-def keep_highest_dice(results: EvaluationResults,
-                      k: Union[int, float] = 1) -> EvaluationResults:
-    """Trim the results of a roll based on the provided amount to keep."""
-    if len(EvaluationResults.rolls) == 0:
-        return results
-
-    results.rolls[-1].keep_highest(k)
-
-    return results

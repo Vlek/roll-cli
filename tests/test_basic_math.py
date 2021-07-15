@@ -58,6 +58,25 @@ def test_division(equation: str, result: Union[int, float]):
     assert roll(equation) == result
 
 
+@pytest.mark.parametrize(("equation", "result"), [
+    ('5 // 5', 1),
+    ('5.5 // 5', 1),
+])
+def test_floor_division(equation: str, result: Union[int, float]):
+    """Ensure that the floor division operator works correctly."""
+    assert roll(equation) == result
+
+
+@pytest.mark.parametrize(("equation", "result"), [
+    ('5**2', 25),
+    ('2 ** 8', 256),
+    ('1000 ** 0', 1),
+])
+def test_exponential(equation: str, result: Union[int, float]):
+    """Ensure that the floor division operator works correctly."""
+    assert roll(equation) == result
+
+
 def test_add_mul():
     assert roll('1 + 2 * 3') == 7
 
