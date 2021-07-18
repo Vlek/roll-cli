@@ -91,7 +91,26 @@ class EvaluationResults():
         self.rolls = er.rolls
 
     def __str__(self: EvaluationResults) -> str:
-        """Return a string representation of the eval results."""
+        """
+        Return a string representation of the eval results.
+
+        This will output all of the history of the dice roll
+        along with the total sum.
+
+        e.g.
+        Roll: 4d6 + 2
+
+        4d6: [3, 1, 1, 2]
+        7 + 2: 9
+        9
+
+        Roll: 10d10K5 + 4
+
+        10d10: [10, 6, 2, 1, 3, 3, 4, 8, 6, 4]
+        K5: [4, 6, 6, 8, 10]
+        34 + 4: 38
+        38
+        """
         return f"{self.total}"
 
     def __int__(self: EvaluationResults) -> int:
