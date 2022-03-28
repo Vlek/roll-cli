@@ -70,7 +70,8 @@ class EvaluationResults():
 
         self.total: Union[int, float] = total or 0
         self.rolls: List[roll.parser.types.RollResults] = rolls
-        self.last_operation: Union[Operators, None] = last_operation
+        # self.last_operation: Union[Operators, None] = last_operation
+        self.history: List[str] = []
 
     def add_roll(self: EvaluationResults,
                  roll: roll.parser.types.RollResults) -> None:
@@ -257,7 +258,7 @@ class EvaluationResults():
         if isinstance(x, (int, float)):
             self.total = x / self.total
         else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
 
         return self
 
@@ -294,7 +295,7 @@ class EvaluationResults():
         if isinstance(x, (int, float)):
             self.total = x // self.total
         else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
 
         return self
 
@@ -328,8 +329,7 @@ class EvaluationResults():
         if isinstance(x, (int, float)):
             self.total = float(x) % self.total
         else:
-            raise TypeError(
-                "The supplied type is not valid: " + str(type(x)))
+            raise TypeError(f"The supplied type is not valid: {type(x)}")
 
         return self
 
@@ -364,6 +364,6 @@ class EvaluationResults():
         if isinstance(x, (int, float)):
             self.total = x ** self.total
         else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
 
         return self

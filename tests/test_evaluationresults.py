@@ -21,7 +21,7 @@ def test_rtruediv_bad_type() -> None:
     er = EvaluationResults()
     with pytest.raises(
         TypeError,
-        match="can only concatenate str"
+        match="The supplied type is not valid: str"
     ):
         'banana' / er
 
@@ -46,7 +46,7 @@ def test_rfloordiv_bad_type() -> None:
     er = EvaluationResults(50)
     with pytest.raises(
         TypeError,
-        match="can only concatenate str"
+        match="The supplied type is not valid: str"
     ):
         'banana' // er
 
@@ -94,7 +94,7 @@ def test_rpow_bad_type() -> None:
     er = EvaluationResults(109)
     with pytest.raises(
         TypeError,
-        match="can only concatenate str"
+        match="The supplied type is not valid: str"
     ):
         'apple' ** er
 

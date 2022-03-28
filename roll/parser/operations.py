@@ -187,4 +187,6 @@ def roll_dice(
     result.add_roll(
         RollResults(f'{starting_num_dice}d{starting_sides}', rolls))
 
+    result.history.append(f"Rolled: {starting_num_dice}d{starting_sides}: {rolls}")
+
     return result
