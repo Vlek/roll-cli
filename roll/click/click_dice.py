@@ -61,15 +61,7 @@ def roll_cli(expression: List[str] = None,
         command_input, verbose, roll_option,
     )
 
-    if verbose and isinstance(result, EvaluationResults):
-        for r in result.rolls:
-            click.echo(
-                f"{r.dice}: {r.rolls}"
-            )
-
-        click.echo(result.total)
-    else:
-        click.echo(result)
+    click.echo(result)
 
 
 if __name__ == '__main__':

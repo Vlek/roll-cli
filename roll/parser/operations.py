@@ -129,10 +129,12 @@ def roll_dice(
     # and sides values, we do not include the totals in the final
     # value.
     if isinstance(num_dice, EvaluationResults):
+        result.history.append("hello")
         result += num_dice
         num_dice = num_dice.total
 
     if isinstance(sides, EvaluationResults):
+        result.history.append("bonjur")
         result += sides
         sides = sides.total
 
@@ -186,7 +188,5 @@ def roll_dice(
 
     result.add_roll(
         RollResults(f'{starting_num_dice}d{starting_sides}', rolls))
-
-    result.history.append(f"Rolled: {starting_num_dice}d{starting_sides}: {rolls}")
 
     return result

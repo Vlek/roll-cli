@@ -53,31 +53,33 @@ class EvaluationResults():
     """Hold the current state of all rolls and the total from other ops."""
 
     def __init__(self: EvaluationResults,
-                 value: Union[int, float, EvaluationResults] = None,
-                 rolls: List[roll.parser.types.RollResults] = None,
-                 last_operation: Operators = None) -> None:
+                 value: Union[int, float, EvaluationResults] = 0,
+                 rolls: Union[List[roll.parser.types.RollResults], None] = None
+                 ) -> None:
         """Initialize an EvaluationResults object."""
         if rolls is None:
             rolls = []
 
         total: Optional[Union[int, float]] = None
+        history: list[str] = []
 
         if isinstance(value, EvaluationResults):
             rolls.extend(value.rolls)
+            history = value.history
             total = value.total
         else:
             total = value
 
-        self.total: Union[int, float] = total or 0
+        self.total: Union[int, float] = total
         self.rolls: List[roll.parser.types.RollResults] = rolls
-        # self.last_operation: Union[Operators, None] = last_operation
-        self.history: List[str] = []
+        self.history: List[str] = history
 
     def add_roll(self: EvaluationResults,
                  roll: roll.parser.types.RollResults) -> None:
         """Add the results of a roll to the total evaluation results."""
         self.total += roll.total()
         self.rolls.append(roll)
+        self.history.append(f"Rolled: {roll.dice}: {roll.rolls}")
 
     def _collect_rolls(self: EvaluationResults, er: EvaluationResults) -> None:
         """
@@ -89,6 +91,8 @@ class EvaluationResults():
         to have the most recently roll as our last.
         """
         er.rolls.extend(self.rolls)
+        #for r in er.rolls:
+        #    self.history.append(f"Rolled: {r.dice}: {r.rolls}")
         self.rolls = er.rolls
 
     def __str__(self: EvaluationResults) -> str:
@@ -112,7 +116,9 @@ class EvaluationResults():
         34 + 4: 38
         38
         """
-        return f"{self.total}"
+        history_string: str = '\n'.join([h for h in self.history]) + "\n"
+
+        return f"{history_string}{self.total}"
 
     def __int__(self: EvaluationResults) -> int:
         """Change the evaluation result total to an integer."""
@@ -144,15 +150,20 @@ class EvaluationResults():
     def __add__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Add a given value to the evaluation result total."""
-        self.last_operation = Operators.add
-
+        right_hand_value: Union[int, float, EvaluationResults]
+        previous_total = self.total
         if isinstance(x, (int, float)):
-            self.total += x
+            right_hand_value = x
         elif isinstance(x, EvaluationResults):
             self._collect_rolls(x)
-            self.total += x.total
+            self.history.extend(x.history)
+            right_hand_value = x.total
         else:
             raise TypeError("The supplied type is not valid: " + type(x))
+
+        self.total += right_hand_value
+
+        self.history.append(f"Adding: {previous_total} + {right_hand_value} = {self.total}")
 
         return self
 
@@ -169,8 +180,6 @@ class EvaluationResults():
     def __sub__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        self.last_operation = Operators.sub
-
         if isinstance(x, (int, float)):
             self.total -= x
         elif isinstance(x, EvaluationResults):
@@ -189,8 +198,6 @@ class EvaluationResults():
     def __rsub__(self: EvaluationResults,
                  x: Union[int, float]) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        self.last_operation = Operators.sub
-
         # We don't have to compare for EvaluationResults because that will
         # use __sub__ instead!
         if isinstance(x, (int, float)):
@@ -203,8 +210,6 @@ class EvaluationResults():
     def __mul__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Multiply the evaluation result total by a given value."""
-        self.last_operation = Operators.mul
-
         if isinstance(x, (int, float)):
             self.total *= x
         elif isinstance(x, EvaluationResults):
@@ -229,8 +234,6 @@ class EvaluationResults():
                     x: Union[int, float, EvaluationResults]
                     ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        self.last_operation = Operators.truediv
-
         if isinstance(x, (int, float)):
             self.total /= x
         elif isinstance(x, EvaluationResults):
@@ -251,8 +254,6 @@ class EvaluationResults():
                      x: Union[int, float, EvaluationResults]
                      ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        self.last_operation = Operators.truediv
-
         # We do not have to check for EvaluationResults, those will
         # be handled by __truediv__!
         if isinstance(x, (int, float)):
@@ -266,8 +267,6 @@ class EvaluationResults():
                      x: Union[int, float, EvaluationResults]
                      ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        self.last_operation = Operators.floordiv
-
         if isinstance(x, (int, float)):
             self.total //= x
         elif isinstance(x, EvaluationResults):
@@ -288,8 +287,6 @@ class EvaluationResults():
                       x: Union[int, float, EvaluationResults]
                       ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        self.last_operation = Operators.floordiv
-
         # We do not have to check for EvaluationResults, those will be
         # handled by __floordiv__!
         if isinstance(x, (int, float)):
@@ -302,8 +299,6 @@ class EvaluationResults():
     def __mod__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        self.last_operation = Operators.mod
-
         if isinstance(x, (int, float)):
             self.total %= x
         elif isinstance(x, EvaluationResults):
@@ -322,8 +317,6 @@ class EvaluationResults():
     def __rmod__(self: EvaluationResults,
                  x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        self.last_operation = Operators.mod
-
         # We do not have to check for EvaluationResults, those will be
         # handled by __mod__!
         if isinstance(x, (int, float)):
@@ -336,8 +329,6 @@ class EvaluationResults():
     def __pow__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        self.last_operation = Operators.expo
-
         if isinstance(x, (int, float)):
             self.total **= x
         elif isinstance(x, EvaluationResults):
@@ -357,8 +348,6 @@ class EvaluationResults():
     def __rpow__(self: EvaluationResults,
                  x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        self.last_operation = Operators.expo
-
         # We do not have to check for EvaluationResults, those will be
         # handled by __pow__!
         if isinstance(x, (int, float)):
