@@ -258,12 +258,6 @@ def test_make_er_from_er() -> None:
     assert second_er == 234
 
 
-def test_to_string() -> None:
-    er = EvaluationResults()
-    er += 5
-    assert str(er) == '5'
-
-
 def test_to_int() -> None:
     er = EvaluationResults(5.5)
     assert isinstance(int(er), int)
