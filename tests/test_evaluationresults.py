@@ -37,7 +37,7 @@ def test_floordiv_bad_type() -> None:
     er = EvaluationResults(100)
     with pytest.raises(
         TypeError,
-        match="can only concatenate str"
+        match="The supplied type is not valid: str"
     ):
         er // 'banana'
 
@@ -61,7 +61,7 @@ def test_mod_bad_type() -> None:
     er = EvaluationResults(250)
     with pytest.raises(
         TypeError,
-        match="can only concatenate str"
+        match="The supplied type is not valid: str"
     ):
         er % 'banana'
 
@@ -119,7 +119,7 @@ def test_add() -> None:
 
 def test_add_non_num() -> None:
     er = EvaluationResults()
-    with pytest.raises(TypeError, match="can only concatenate str"):
+    with pytest.raises(TypeError, match="The supplied type is not valid: str"):
         er + 'Banana'  # noqa
 
 
@@ -144,13 +144,13 @@ def test_sub() -> None:
 
 def test_sub_non_num() -> None:
     er = EvaluationResults()
-    with pytest.raises(TypeError, match="can only concatenate str"):
+    with pytest.raises(TypeError, match="The supplied type is not valid: str"):
         er - 'Banana'  # noqa
 
 
 def test_rsub_non_num() -> None:
     er = EvaluationResults()
-    with pytest.raises(TypeError, match="can only concatenate str"):
+    with pytest.raises(TypeError, match="The supplied type is not valid: str"):
         'Banana' - er  # noqa
 
 
@@ -175,7 +175,7 @@ def test_mul() -> None:
 
 
 def test_mul_non_num() -> None:
-    with pytest.raises(TypeError, match="can only concatenate str"):
+    with pytest.raises(TypeError, match="The supplied type is not valid: str"):
         EvaluationResults() * "banana"
 
 
@@ -205,7 +205,7 @@ def test_truediv_er() -> None:
 
 
 def test_truediv_non_num() -> None:
-    with pytest.raises(TypeError, match="can only concatenate str"):
+    with pytest.raises(TypeError, match="The supplied type is not valid: str"):
         EvaluationResults(0) / "Pants"  # noqa
 
 

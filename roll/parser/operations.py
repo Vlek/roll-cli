@@ -20,9 +20,7 @@ Operations:
 from __future__ import annotations
 
 from math import ceil
-from math import factorial as fact
 from math import floor
-from math import sqrt as squareroot
 from random import randint
 from typing import List, Union
 
@@ -43,38 +41,37 @@ def _to_eval_results(
 def add(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Add x and y together with extended types."""
-    return _to_eval_results(x + y)
+    return _to_eval_results(x) + y
 
 
 def sub(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Subtract x and y together with extended types."""
-    return _to_eval_results(x - y)
+    return _to_eval_results(x) - y
 
 
 def mult(x: Union[int, float, EvaluationResults],
          y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Multiply x and y together with extended types."""
-    return _to_eval_results(x * y)
+    return _to_eval_results(x) * y
 
 
 def true_div(x: Union[int, float, EvaluationResults],
              y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Divide (true) x and y with extended types."""
-    return _to_eval_results(x / y)
+    return _to_eval_results(x) / y
 
 
 def floor_div(x: Union[int, float, EvaluationResults],
               y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Divide (floor) x and y with extended types."""
-    return _to_eval_results(x // y)
+    return _to_eval_results(x) // y
 
 
 def mod(x: Union[int, float, EvaluationResults],
         y: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Divide (modulus) x and y with extended types."""
-    # We get a false positive here for modulus string op
-    return _to_eval_results(x % y)  # noqa: S001
+    return _to_eval_results(x) % y
 
 
 def factorial(
@@ -88,28 +85,22 @@ def factorial(
         float: The value is ceil'd and then passed as an int.
         EvaluationResults: The total is ceil'd and passed.
     """
-    result: Union[int, EvaluationResults]
+    if not isinstance(x, EvaluationResults):
+        x = _to_eval_results(x)
 
-    if isinstance(x, EvaluationResults):
-        x.total = fact(ceil(x.total))
-        result = x
-    else:
-        result = fact(ceil(x))
+    x.factorial()
 
-    return _to_eval_results(result)
+    return x
 
 
 def sqrt(x: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """Perform sqrt on x with extended types."""
-    result: Union[int, float, EvaluationResults]
+    if not isinstance(x, EvaluationResults):
+        x = _to_eval_results(x)
 
-    if isinstance(x, EvaluationResults):
-        x.total = squareroot(x.total)
-        result = x
-    else:
-        result = squareroot(x)
+    x.sqrt()
 
-    return _to_eval_results(result)
+    return x
 
 
 def roll_dice(
@@ -129,12 +120,10 @@ def roll_dice(
     # and sides values, we do not include the totals in the final
     # value.
     if isinstance(num_dice, EvaluationResults):
-        result.history.append("hello")
         result += num_dice
         num_dice = num_dice.total
 
     if isinstance(sides, EvaluationResults):
-        result.history.append("bonjur")
         result += sides
         sides = sides.total
 

@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import List, Optional, Union
+from math import sqrt, ceil, factorial
 
 import roll.parser.types
 
@@ -81,6 +82,43 @@ class EvaluationResults():
         self.rolls.append(roll)
         self.history.append(f"Rolled: {roll.dice}: {roll.rolls}")
 
+    def sqrt(self: EvaluationResults) -> None:
+        """Take the square root of the total value."""
+        new_total = sqrt(self.total)
+        self.history.append(f"Square Root: {self.total}: {new_total}")
+
+        self.total = new_total
+
+    def factorial(self: EvaluationResults) -> None:
+        """Factorial the total value."""
+        new_total = factorial(ceil(self.total))
+        self.history.append(f"Factorial: {self.total}!: {new_total}")
+
+        self.total = new_total
+
+    def _process_right_hand_value(self: EvaluationResults,
+            x: Union[EvaluationResults, int, float]) -> Union[int, float]:
+        """
+        Allows two ER objects to have their dice and history combined.
+
+        This is important so that the history and rolls are preserved
+        otherwise we lose key pieces of information that would disallow us
+        from being able to make modifications to rolls, i.e., keep notation,
+        as well as being able to give a complete verbose output when finished.
+        """
+        right_hand_value: Union[int, float, EvaluationResults]
+
+        if isinstance(x, (int, float)):
+            right_hand_value = x
+        elif isinstance(x, EvaluationResults):
+            self._collect_rolls(x)
+            self.history.extend(x.history)
+            right_hand_value = x.total
+        else:
+            raise TypeError("The supplied type is not valid: " + type(x).__name__)
+
+        return right_hand_value
+
     def _collect_rolls(self: EvaluationResults, er: EvaluationResults) -> None:
         """
         Add all rolls together if both objects are EvaluationResults.
@@ -91,8 +129,6 @@ class EvaluationResults():
         to have the most recently roll as our last.
         """
         er.rolls.extend(self.rolls)
-        #for r in er.rolls:
-        #    self.history.append(f"Rolled: {r.dice}: {r.rolls}")
         self.rolls = er.rolls
 
     def __str__(self: EvaluationResults) -> str:
@@ -150,19 +186,10 @@ class EvaluationResults():
     def __add__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Add a given value to the evaluation result total."""
-        right_hand_value: Union[int, float, EvaluationResults]
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
         previous_total = self.total
-        if isinstance(x, (int, float)):
-            right_hand_value = x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.history.extend(x.history)
-            right_hand_value = x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
 
         self.total += right_hand_value
-
         self.history.append(f"Adding: {previous_total} + {right_hand_value} = {self.total}")
 
         return self
@@ -180,13 +207,11 @@ class EvaluationResults():
     def __sub__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        if isinstance(x, (int, float)):
-            self.total -= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total -= x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total -= right_hand_value
+        self.history.append(f"Subtracting: {previous_total} - {right_hand_value} = {self.total}")
 
         return self
 
@@ -198,25 +223,23 @@ class EvaluationResults():
     def __rsub__(self: EvaluationResults,
                  x: Union[int, float]) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        # We don't have to compare for EvaluationResults because that will
-        # use __sub__ instead!
-        if isinstance(x, (int, float)):
-            self.total = x - self.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total = right_hand_value - self.total
+        self.history.append(f"Adding: {right_hand_value} - {previous_total} = {self.total}")
 
         return self
+
 
     def __mul__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Multiply the evaluation result total by a given value."""
-        if isinstance(x, (int, float)):
-            self.total *= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total *= x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total *= right_hand_value
+        self.history.append(f"Multiplying: {previous_total} * {right_hand_value} = {self.total}")
 
         return self
 
@@ -234,13 +257,11 @@ class EvaluationResults():
                     x: Union[int, float, EvaluationResults]
                     ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        if isinstance(x, (int, float)):
-            self.total /= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total /= x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total /= right_hand_value
+        self.history.append(f"Dividing: {previous_total} / {right_hand_value} = {self.total}")
 
         return self
 
@@ -254,12 +275,11 @@ class EvaluationResults():
                      x: Union[int, float, EvaluationResults]
                      ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        # We do not have to check for EvaluationResults, those will
-        # be handled by __truediv__!
-        if isinstance(x, (int, float)):
-            self.total = x / self.total
-        else:
-            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total = right_hand_value / self.total
+        self.history.append(f"Dividing: {right_hand_value} / {previous_total} = {self.total}")
 
         return self
 
@@ -267,14 +287,12 @@ class EvaluationResults():
                      x: Union[int, float, EvaluationResults]
                      ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        if isinstance(x, (int, float)):
-            self.total //= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total //= x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
 
+        self.total //= right_hand_value
+        self.history.append(f"Floor dividing: {previous_total} // {right_hand_value} = {self.total}")
+        
         return self
 
     def __ifloordiv__(self: EvaluationResults,
@@ -287,25 +305,22 @@ class EvaluationResults():
                       x: Union[int, float, EvaluationResults]
                       ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        # We do not have to check for EvaluationResults, those will be
-        # handled by __floordiv__!
-        if isinstance(x, (int, float)):
-            self.total = x // self.total
-        else:
-            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total = right_hand_value // self.total
+        self.history.append(f"Floor dividing: {right_hand_value} // {previous_total} = {self.total}")
 
         return self
 
     def __mod__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        if isinstance(x, (int, float)):
-            self.total %= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total %= x.total
-        else:
-            raise TypeError("The supplied type is not valid: " + type(x))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total %= right_hand_value
+        self.history.append(f"Modulus dividing: {previous_total} % {right_hand_value} = {self.total}")
 
         return self
 
@@ -317,26 +332,22 @@ class EvaluationResults():
     def __rmod__(self: EvaluationResults,
                  x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        # We do not have to check for EvaluationResults, those will be
-        # handled by __mod__!
-        if isinstance(x, (int, float)):
-            self.total = float(x) % self.total
-        else:
-            raise TypeError(f"The supplied type is not valid: {type(x)}")
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total = right_hand_value % self.total
+        self.history.append(f"Modulus dividing: {right_hand_value} % {previous_total} = {self.total}")
 
         return self
 
     def __pow__(self: EvaluationResults,
                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        if isinstance(x, (int, float)):
-            self.total **= x
-        elif isinstance(x, EvaluationResults):
-            self._collect_rolls(x)
-            self.total **= x.total
-        else:
-            raise TypeError(
-                "The supplied type is not valid: " + str(type(x)))
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total **= right_hand_value
+        self.history.append(f"Exponentiating: {previous_total} ** {right_hand_value} = {self.total}")
 
         return self
 
@@ -348,11 +359,10 @@ class EvaluationResults():
     def __rpow__(self: EvaluationResults,
                  x: Union[int, float, EvaluationResults]) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        # We do not have to check for EvaluationResults, those will be
-        # handled by __pow__!
-        if isinstance(x, (int, float)):
-            self.total = x ** self.total
-        else:
-            raise TypeError(f"The supplied type is not valid: {type(x).__name__}")
+        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        previous_total = self.total
+
+        self.total = right_hand_value ** self.total
+        self.history.append(f"Exponentiating: {right_hand_value} ** {previous_total} = {self.total}")
 
         return self
