@@ -92,7 +92,7 @@ class EvaluationResults():
     def factorial(self: EvaluationResults) -> None:
         """Factorial the total value."""
         new_total = factorial(ceil(self.total))
-        self.history.append(f"Factorial: {self.total}!: {new_total}")
+        self.history.append(f"Factorial: {self.total}! = {new_total}")
 
         self.total = new_total
 

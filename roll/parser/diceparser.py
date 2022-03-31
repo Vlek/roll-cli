@@ -34,7 +34,7 @@ from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, infixNotation, oneOf,
                        opAssoc, pyparsing_common)
 from roll.parser.operations import (ROLL_TYPE, add, factorial, floor_div, mod,
-                                    mult, roll_dice, sqrt, sub, true_div)
+                                    mult, roll_dice, sqrt, sub, true_div, expo)
 from roll.parser.types import EvaluationResults, RollOption, RollResults
 
 ParserElement.enablePackrat()
@@ -131,14 +131,13 @@ class DiceParser:
         if not isinstance(value, (int, float, EvaluationResults)):
             raise TypeError(
                 "The given value must be int, float, or EvaluationResults")
-
         return sqrt(value)
 
     @staticmethod
     def _handle_expo(
             toks: list[list[Union[int, float, EvaluationResults
                                   ]]]) -> Union[int, float, EvaluationResults]:
-        return toks[0][0] ** toks[0][2]
+        return expo(toks[0][0], toks[0][2])
 
     @staticmethod
     def _handle_factorial(
@@ -197,8 +196,10 @@ class DiceParser:
 
             if operation_string == 'k':
                 lower_total_by = last_roll.keep_lowest(float(right))
+                result.history.append(f"Keeping lowest: {right}: {last_roll.rolls}")
             else:
                 lower_total_by = last_roll.keep_highest(float(right))
+                result.history.append(f"Keeping highest: {right}: {last_roll.rolls}")
 
             result.total -= lower_total_by
 
@@ -207,7 +208,7 @@ class DiceParser:
     @staticmethod
     def _handle_standard_operation(
             toks: list[list[Union[str, int, float, EvaluationResults
-                                  ]]]) -> Union[int, float, EvaluationResults]:
+                                  ]]]) -> Union[str, int, float, EvaluationResults]:
         # We initialize our result with the left-most value.
         # As we perform operations, this value will be continuously
         # updated and used as the left-hand side.

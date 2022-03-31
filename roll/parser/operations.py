@@ -74,6 +74,12 @@ def mod(x: Union[int, float, EvaluationResults],
     return _to_eval_results(x) % y
 
 
+def expo(x: Union[int, float, EvaluationResults],
+        y: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    """Exponentiate x by y with extended types."""
+    return _to_eval_results(x) ** y
+
+
 def factorial(
         x: Union[int, float, EvaluationResults]) -> EvaluationResults:
     """
