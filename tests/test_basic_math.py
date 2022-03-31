@@ -58,6 +58,25 @@ def test_division(equation: str, result: Union[int, float]):
     assert roll(equation) == result
 
 
+@pytest.mark.parametrize(("equation", "result"), [
+    ('5 // 5', 1),
+    ('5.5 // 5', 1),
+])
+def test_floor_division(equation: str, result: Union[int, float]):
+    """Ensure that the floor division operator works correctly."""
+    assert roll(equation) == result
+
+
+@pytest.mark.parametrize(("equation", "result"), [
+    ('5**2', 25),
+    ('2 ** 8', 256),
+    ('1000 ** 0', 1),
+])
+def test_exponential(equation: str, result: Union[int, float]):
+    """Ensure that the floor division operator works correctly."""
+    assert roll(equation) == result
+
+
 def test_add_mul():
     assert roll('1 + 2 * 3') == 7
 
@@ -151,7 +170,11 @@ def test_add_explonential():
 
 @pytest.mark.parametrize("equation,result", [
     ('pi', math.pi),
+    ('Pi', math.pi),
+    ('PI', math.pi),
+    ('pI', math.pi),
     ('e', math.e),
+    ('E', math.e),
 ])
 def test_constants(equation: str, result: Union[int, float]):
     assert roll(equation) == result
@@ -159,6 +182,11 @@ def test_constants(equation: str, result: Union[int, float]):
 
 @pytest.mark.parametrize("equation,result", [
     ('sqrt 25', 5),
+    ('Sqrt 25', 5),
+    ('sqrT 25', 5),
+    ('sQRt 25', 5),
+    ('sQRT 25', 5),
+    ('SQRT 25', 5),
     # Addition
     ('2 + sqrt 9', 5),
     ('sqrt 36 + 7', 13),
