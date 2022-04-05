@@ -1,5 +1,5 @@
-from roll import roll
-from roll.parser.types import RollOption
+from roll_cli import roll
+from roll_cli.parser.types import RollOption
 import pytest
 
 
