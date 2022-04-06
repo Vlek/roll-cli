@@ -24,7 +24,7 @@ from math import floor
 from random import randint
 from typing import List, Union
 
-from roll.parser.types import EvaluationResults, RollOption, RollResults
+from .types import EvaluationResults, RollOption, RollResults
 
 ROLL_TYPE: RollOption = RollOption.Normal
 

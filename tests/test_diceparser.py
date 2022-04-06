@@ -16,7 +16,7 @@ expecting.
 """
 
 import pytest
-from roll.parser import DiceParser
+from src.roll_cli.parser import DiceParser
 
 
 def test_handle_keep() -> None:

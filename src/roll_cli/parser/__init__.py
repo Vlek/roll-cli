@@ -1,1 +1,1 @@
-from roll.parser.diceparser import DiceParser
+from .diceparser import DiceParser

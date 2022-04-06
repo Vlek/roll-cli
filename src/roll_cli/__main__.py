@@ -15,8 +15,8 @@ etc.
 
 from typing import List, Union
 
-from roll_cli.roll import roll
-from roll_cli.parser.types import EvaluationResults, RollOption
+from . import roll
+from .parser.types import EvaluationResults, RollOption
 
 import click
 

@@ -1,5 +1,6 @@
 import pytest
-from roll.parser.types import EvaluationResults, RollResults
+
+from src.roll_cli.parser.types import EvaluationResults, RollResults
 
 
 def test_eq() -> None:

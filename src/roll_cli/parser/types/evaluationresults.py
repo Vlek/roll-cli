@@ -27,7 +27,7 @@ from enum import Enum
 from typing import List, Optional, Union
 from math import sqrt, ceil, factorial
 
-import roll.parser.types
+from .rollresults import RollResults
 
 
 class Operators(Enum):
@@ -55,7 +55,7 @@ class EvaluationResults():
 
     def __init__(self: EvaluationResults,
                  value: Union[int, float, EvaluationResults] = 0,
-                 rolls: Union[List[roll.parser.types.RollResults], None] = None
+                 rolls: Union[List[RollResults], None] = None
                  ) -> None:
         """Initialize an EvaluationResults object."""
         if rolls is None:
@@ -72,11 +72,11 @@ class EvaluationResults():
             total = value
 
         self.total: Union[int, float] = total
-        self.rolls: List[roll.parser.types.RollResults] = rolls
+        self.rolls: List[RollResults] = rolls
         self.history: List[str] = history
 
     def add_roll(self: EvaluationResults,
-                 roll: roll.parser.types.RollResults) -> None:
+                 roll: RollResults) -> None:
         """Add the results of a roll to the total evaluation results."""
         self.total += roll.total()
         self.rolls.append(roll)

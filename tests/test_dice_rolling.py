@@ -1,5 +1,5 @@
 import pytest
-from roll import roll
+from src.roll_cli import roll
 
 
 def test_basic_roll():

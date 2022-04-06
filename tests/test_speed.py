@@ -19,6 +19,7 @@ import timeit
 
 import pytest
 
+
 # The acceptable speed is set to 1/10th of a second.
 ACCEPTABLE_SPEED_AVERAGE = 0.1
 
@@ -29,7 +30,7 @@ def test_basic_roll_time() -> None:
 
     result = timeit.timeit(
         "roll()",
-        "gc.enable();from roll import roll",
+        "gc.enable();from src.roll_cli import roll",
         number=iterations
     )
     current_speed: float = result / iterations

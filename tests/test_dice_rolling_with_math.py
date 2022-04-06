@@ -3,8 +3,8 @@ from math import ceil
 from typing import Union
 
 import pytest
-from roll import roll
-from roll.parser.types import EvaluationResults
+from src.roll_cli import roll
+from src.roll_cli.parser.types import EvaluationResults
 
 
 def test_d6_plus_d8():

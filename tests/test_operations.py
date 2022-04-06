@@ -10,8 +10,8 @@ without being used in the greater project.
 from typing import Union
 
 import pytest
-from roll.parser.operations import roll_dice
-from roll.parser.types import EvaluationResults, RollOption
+from src.roll_cli.parser.operations import roll_dice
+from src.roll_cli.parser.types import EvaluationResults, RollOption
 
 
 @pytest.mark.parametrize(

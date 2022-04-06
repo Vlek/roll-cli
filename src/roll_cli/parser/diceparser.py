@@ -33,9 +33,9 @@ from typing import Callable, Dict, List, Union
 from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
                        ParseException, ParserElement, infixNotation, oneOf,
                        opAssoc, pyparsing_common)
-from roll.parser.operations import (ROLL_TYPE, add, factorial, floor_div, mod,
+from .operations import (ROLL_TYPE, add, factorial, floor_div, mod,
                                     mult, roll_dice, sqrt, sub, true_div, expo)
-from roll.parser.types import EvaluationResults, RollOption, RollResults
+from .types import EvaluationResults, RollOption, RollResults
 
 ParserElement.enablePackrat()
 

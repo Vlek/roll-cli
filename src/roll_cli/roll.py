@@ -15,8 +15,8 @@ etc.
 """
 from typing import Union
 
-from roll.parser import DiceParser
-from roll.parser.types import EvaluationResults, RollOption
+from .parser.diceparser import DiceParser
+from .parser.types import EvaluationResults, RollOption
 
 _DICE_PARSER = DiceParser()
 
