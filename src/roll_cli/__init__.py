@@ -1,2 +1,8 @@
 """Roll."""
-from .roll import roll
+from typing import Tuple
+
+from .roll import roll as roll
+
+__all__: Tuple[str, ...] = (
+    "roll",
+    )

@@ -1,6 +1,6 @@
 import pytest
 
-from src.roll_cli.parser.types import EvaluationResults, RollResults
+from roll_cli.parser.types import EvaluationResults, RollResults
 
 
 def test_eq() -> None:
@@ -24,7 +24,7 @@ def test_rtruediv_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid: str"
     ):
-        'banana' / er
+        'banana' / er # type: ignore
 
 
 def test_floordiv_er() -> None:
@@ -40,7 +40,7 @@ def test_floordiv_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid: str"
     ):
-        er // 'banana'
+        er // 'banana' # type: ignore
 
 
 def test_rfloordiv_bad_type() -> None:
@@ -49,7 +49,7 @@ def test_rfloordiv_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid: str"
     ):
-        'banana' // er
+        'banana' // er # type: ignore
 
 
 def test_mod_er() -> None:
@@ -64,7 +64,7 @@ def test_mod_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid: str"
     ):
-        er % 'banana'
+        er % 'banana' # type: ignore
 
 
 def test_rmod_bad_type() -> None:
@@ -73,7 +73,7 @@ def test_rmod_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid"
     ):
-        ['Skippy'] % er
+        ['Skippy'] % er # type: ignore
 
 
 def test_pow_er() -> None:
@@ -88,7 +88,7 @@ def test_pow_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid"
     ):
-        er ** 'apple'
+        er ** 'apple' # type: ignore
 
 
 def test_rpow_bad_type() -> None:
@@ -97,7 +97,7 @@ def test_rpow_bad_type() -> None:
         TypeError,
         match="The supplied type is not valid: str"
     ):
-        'apple' ** er
+        'apple' ** er # type: ignore
 
 
 def test_er_eq_er() -> None:
@@ -121,7 +121,7 @@ def test_add() -> None:
 def test_add_non_num() -> None:
     er = EvaluationResults()
     with pytest.raises(TypeError, match="The supplied type is not valid: str"):
-        er + 'Banana'  # noqa
+        er + 'Banana' # type: ignore
 
 
 def test_unary_minus() -> None:
@@ -146,13 +146,13 @@ def test_sub() -> None:
 def test_sub_non_num() -> None:
     er = EvaluationResults()
     with pytest.raises(TypeError, match="The supplied type is not valid: str"):
-        er - 'Banana'  # noqa
+        er - 'Banana' # type: ignore
 
 
 def test_rsub_non_num() -> None:
     er = EvaluationResults()
     with pytest.raises(TypeError, match="The supplied type is not valid: str"):
-        'Banana' - er  # noqa
+        'Banana' - er # type: ignore
 
 
 def test_isub() -> None:
@@ -177,7 +177,7 @@ def test_mul() -> None:
 
 def test_mul_non_num() -> None:
     with pytest.raises(TypeError, match="The supplied type is not valid: str"):
-        EvaluationResults() * "banana"
+        EvaluationResults() * "banana" # type: ignore
 
 
 def test_mul_reversed() -> None:
@@ -207,7 +207,7 @@ def test_truediv_er() -> None:
 
 def test_truediv_non_num() -> None:
     with pytest.raises(TypeError, match="The supplied type is not valid: str"):
-        EvaluationResults(0) / "Pants"  # noqa
+        EvaluationResults(0) / "Pants" # type: ignore
 
 
 def test_floordiv() -> None:

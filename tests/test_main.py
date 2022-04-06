@@ -2,7 +2,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.roll_cli import __main__
+from roll_cli import __main__
 
 
 @pytest.fixture

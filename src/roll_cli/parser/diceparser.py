@@ -30,7 +30,9 @@ from __future__ import annotations
 from math import e, pi
 from typing import Callable, Dict, List, Union
 
-from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal,
+# While I would love it if we had type info for this, we do not. I am not going to spend
+# the time just yet to create a stub file and I was not able to find one.
+from pyparsing import (CaselessKeyword, CaselessLiteral, Forward, Literal, # type: ignore
                        ParseException, ParserElement, infixNotation, oneOf,
                        opAssoc, pyparsing_common)
 from .operations import (ROLL_TYPE, add, factorial, floor_div, mod,
@@ -43,7 +45,14 @@ ParserElement.enablePackrat()
 class DiceParser:
     """Parser for evaluating dice strings."""
 
-    OPERATIONS: Dict[str, Callable] = {
+    OPERATIONS: Dict[
+            str, 
+            Callable[
+                # Arguments
+                [Union[int, float, EvaluationResults], Union[int, float, EvaluationResults]],
+                # Output
+                Union[int, float, EvaluationResults]
+            ]] = {
         "+": add,
         "-": sub,
         "*": mult,
@@ -212,15 +221,23 @@ class DiceParser:
         # We initialize our result with the left-most value.
         # As we perform operations, this value will be continuously
         # updated and used as the left-hand side.
-        result: Union[int, float, EvaluationResults, str] = toks[0][0]
+        left_hand_side: Union[int, float, EvaluationResults, str] = toks[0][0]
+
+        if isinstance(left_hand_side, str):
+            left_hand_side = float(left_hand_side)
+
+        result: Union[int, float, EvaluationResults] = left_hand_side
 
         # Because we get things like [[1, "+", 2, "+", 3]], we have
         # to be able to handle additional operations beyond a single
         # left/right pair.
         for pair in range(1, len(toks[0]), 2):
 
-            right: Union[int, float,
+            right_hand_side: Union[int, float,
                          EvaluationResults, str] = toks[0][pair + 1]
+
+            if isinstance(right_hand_side, str):
+                right_hand_side = float(right_hand_side)
 
             operation_string: str = str(toks[0][pair])
 
@@ -229,10 +246,10 @@ class DiceParser:
                     Union[int, float, EvaluationResults],
                     Union[int, float, EvaluationResults]
                 ],
-                EvaluationResults
+                Union[int, float, EvaluationResults]
             ] = DiceParser.OPERATIONS[operation_string]
 
-            result = op(result, right)
+            result = op(result, right_hand_side)
 
         return result
 

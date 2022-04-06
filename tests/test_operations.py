@@ -10,8 +10,8 @@ without being used in the greater project.
 from typing import Union
 
 import pytest
-from src.roll_cli.parser.operations import roll_dice
-from src.roll_cli.parser.types import EvaluationResults, RollOption
+from roll_cli.parser.operations import roll_dice
+from roll_cli.parser.types import RollOption
 
 
 @pytest.mark.parametrize(
@@ -20,10 +20,10 @@ from src.roll_cli.parser.types import EvaluationResults, RollOption
         (0.01, 1000, 1, 10),
     ])
 def test_dice_roll(
-    num_dice: Union[int, float, EvaluationResults],
-    sides: Union[int, float, EvaluationResults],
-    range_low: int, range_high: int
-) -> None:
+        num_dice: Union[int, float],
+        sides: Union[int, float],
+        range_low: int, range_high: int
+    ) -> None:
     """Test the dice_roll function."""
     assert roll_dice(
-        num_dice, sides, RollOption.Normal) in range(range_low, range_high + 1)
+        num_dice, sides, RollOption.Normal).total in range(range_low, range_high + 1)

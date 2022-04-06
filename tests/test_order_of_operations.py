@@ -2,7 +2,7 @@
 from typing import Union
 
 import pytest
-from src.roll_cli import roll
+from roll_cli import roll
 
 
 def test_mul_b4_add1() -> None:
@@ -84,7 +84,7 @@ def test_inception_dice_with_parens3() -> None:
 ])
 def test_oop_worksheet_problems(
         equation: str,
-        answer: Union[int, float]):
+        answer: Union[int, float]) -> None:
     """
     These are all ones I've pulled from order of operations math
     worksheets. These are ones with verified answers and should

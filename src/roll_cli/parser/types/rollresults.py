@@ -7,7 +7,7 @@ roll (either a singular die roll or a group of like dice rolled).
 
 from __future__ import annotations
 
-from math import ceil
+from math import ceil, fsum
 from typing import List, Union
 
 
@@ -38,7 +38,7 @@ class RollResults:
         previous_sum: Union[int, float] = sum(self.rolls)
         self.rolls = sorted(self.rolls)[:ceil(num)]
 
-        return previous_sum - sum(self.rolls)
+        return previous_sum - fsum(self.rolls)
 
     def keep_highest(self: RollResults,
                      num: Union[int, float] = 1) -> Union[int, float]:
@@ -46,4 +46,4 @@ class RollResults:
         previous_sum: Union[int, float] = sum(self.rolls)
         self.rolls = sorted(self.rolls)[-ceil(num):]
 
-        return previous_sum - sum(self.rolls)
+        return previous_sum - fsum(self.rolls)

@@ -16,7 +16,7 @@ etc.
 from typing import List, Union
 
 from . import roll
-from .parser.types import EvaluationResults, RollOption
+from roll_cli.parser.types import EvaluationResults, RollOption
 
 import click
 
@@ -29,7 +29,7 @@ import click
               help='Set dice to always roll the maximum value')
 @click.option('-v', '--verbose', 'verbose', is_flag=True,
               help='Print the individual die roll values')
-def main(expression: List[str] = None,
+def main(expression: List[str],
              roll_option: RollOption = RollOption.Normal,
              verbose: bool = False) -> None:
     """
@@ -55,7 +55,7 @@ def main(expression: List[str] = None,
 
         (1d4)d6             - Rolls 1d4 d6 die
     """
-    command_input = ' '.join(expression) if expression is not None else ''
+    command_input = ' '.join(expression)
 
     result: Union[int, float, EvaluationResults] = roll(
         command_input, verbose, roll_option,

@@ -4,7 +4,7 @@ from typing import Union
 
 import pytest
 #from roll_cli.roll import roll
-from src.roll_cli.roll import roll
+from roll_cli.roll import roll
 
 
 @pytest.mark.parametrize("equation,result", [
