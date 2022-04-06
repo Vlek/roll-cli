@@ -7,27 +7,27 @@ from src.roll_cli import roll
 from src.roll_cli.parser.types import EvaluationResults
 
 
-def test_d6_plus_d8():
+def test_d6_plus_d8() -> None:
     assert roll('d6 + d8') in range(2, 15)
 
 
-def test_1d8_plus_3d6():
+def test_1d8_plus_3d6() -> None:
     assert roll('1d8 + 3d6') in range(4, 27)
 
 
-def test_mul_1d4():
+def test_mul_1d4() -> None:
     assert roll('4 * 1d4') in range(4, 17)
 
 
-def test_1d4_add_div():
+def test_1d4_add_div() -> None:
     assert roll('1d4 + 16 / 4') in range(5, 9)
 
 
-def test_2d8_parens_add_mult():
+def test_2d8_parens_add_mult() -> None:
     assert roll('(2d8 + 8) * 4') in range(40, 97)
 
 
-def test_d6_mul_4():
+def test_d6_mul_4() -> None:
     assert roll('d6 * 4') in range(4, 25)
 
 
@@ -59,7 +59,7 @@ def test_dice_expo(equation: str, result: Union[int, float]) -> None:
     # Square root an EvaluationResults object after a dice roll
     ('sqrt(1d16)', 1, 4)
 ])
-def test_dice_sqrt(equation: str, range_low: int, range_high: int):
+def test_dice_sqrt(equation: str, range_low: int, range_high: int) -> None:
     result = roll(equation, verbose=True)
 
     if isinstance(result, EvaluationResults):

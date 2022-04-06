@@ -2,7 +2,7 @@ import pytest
 from src.roll_cli import roll
 
 
-def test_basic_roll():
+def test_basic_roll() -> None:
     result = roll()
     assert type(result) == int
     assert result in range(1, 21)
@@ -25,7 +25,7 @@ def test_basic_roll():
     ('1d1', 1, 1),
     ('1d2', 1, 2),
 ])
-def test_roll(equation: str, range_low: int, range_high: int):
+def test_roll(equation: str, range_low: int, range_high: int) -> None:
     assert roll(equation) in range(range_low, range_high + 1)
 
 
@@ -48,67 +48,67 @@ def test_float_roll(equation: str, range_low: int, range_high: int) -> None:
     assert roll(equation) in range(range_low, range_high + 1)
 
 
-def test_zero_dice_roll():
+def test_zero_dice_roll() -> None:
     assert roll('0d20') == 0
 
 
-def test_zero_sided_dice_roll():
+def test_zero_sided_dice_roll() -> None:
     assert roll('1d0') == 0
 
 
-def test_1d_neg20():
+def test_1d_neg20() -> None:
     with pytest.raises(Exception):
         roll('1d-20')
 
 
-def test_neg1d_neg20():
+def test_neg1d_neg20() -> None:
     with pytest.raises(Exception):
         roll('-1d-20')
 
 
-def test_float_roll1():
+def test_float_roll1() -> None:
     assert roll('0.5d20') in range(1, 11)
 
 
-def test_3d6():
+def test_3d6() -> None:
     assert roll('3d6') in range(3, 19)
 
 
-def test_100d1():
+def test_100d1() -> None:
     assert roll('100d1') == 100
 
 
-def test_d100():
+def test_d100() -> None:
     assert roll('d100') in range(1, 101)
 
 
-def test_d_percentage():
+def test_d_percentage() -> None:
     assert roll('d%') in range(1, 101)
 
 
-def test_no_sides_given():
+def test_no_sides_given() -> None:
     with pytest.raises(Exception):
         roll('1d')
 
 
-def test_no_sides_given_with_parens():
+def test_no_sides_given_with_parens() -> None:
     with pytest.raises(Exception):
         roll('2d()')
 
 
-def test_float_num_dice():
+def test_float_num_dice() -> None:
     assert roll('0.5d20') in range(1, 11)
 
 
-def test_float_num_dice2():
+def test_float_num_dice2() -> None:
     assert roll('0.25d100') in range(1, 26)
 
 
-def test_float_sides1():
+def test_float_sides1() -> None:
     assert roll('d2.5') in range(1, 4)
 
 
-def test_float_sides2():
+def test_float_sides2() -> None:
     assert roll('2d19.99') in range(2, 41)
 
 

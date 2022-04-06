@@ -19,11 +19,11 @@ from src.roll_cli.roll import roll
     ('1.5 + 0.5', 2),
     ('204.5 + 20', 224.5),
 ])
-def test_addition(equation: str, result: Union[int, float]):
+def test_addition(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
 
 
-def test_addition_with_uneven_spaces2():
+def test_addition_with_uneven_spaces2() -> None:
     with pytest.raises(Exception):
         roll('321\t\n  + \t\t\t   \t 18')
 
@@ -35,7 +35,7 @@ def test_addition_with_uneven_spaces2():
     ('73 - 100', -27),
     ('5 - -10', 15),
 ])
-def test_subtraction(equation: str, result: Union[int, float]):
+def test_subtraction(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
 
 
@@ -45,7 +45,7 @@ def test_subtraction(equation: str, result: Union[int, float]):
     ('1 * 10 * 100', 1000),
     ('6 * 8 * 2 * 10', 960),
 ])
-def test_multiplication(equation: str, result: Union[int, float]):
+def test_multiplication(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
 
 
@@ -55,7 +55,7 @@ def test_multiplication(equation: str, result: Union[int, float]):
     ('48 / 6', 8),
     ('54 / 9', 6),
 ])
-def test_division(equation: str, result: Union[int, float]):
+def test_division(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
 
 
@@ -63,7 +63,7 @@ def test_division(equation: str, result: Union[int, float]):
     ('5 // 5', 1),
     ('5.5 // 5', 1),
 ])
-def test_floor_division(equation: str, result: Union[int, float]):
+def test_floor_division(equation: str, result: Union[int, float]) -> None:
     """Ensure that the floor division operator works correctly."""
     assert roll(equation) == result
 
@@ -73,99 +73,99 @@ def test_floor_division(equation: str, result: Union[int, float]):
     ('2 ** 8', 256),
     ('1000 ** 0', 1),
 ])
-def test_exponential(equation: str, result: Union[int, float]):
+def test_exponential(equation: str, result: Union[int, float]) -> None:
     """Ensure that the floor division operator works correctly."""
     assert roll(equation) == result
 
 
-def test_add_mul():
+def test_add_mul() -> None:
     assert roll('1 + 2 * 3') == 7
 
 
-def test_mul_add():
+def test_mul_add() -> None:
     assert roll('3 * 2 + 1') == 7
 
 
-def test_sub_div():
+def test_sub_div() -> None:
     assert roll('10 - 5 / 5') == 9
 
 
-def test_div_sub():
+def test_div_sub() -> None:
     assert roll('15 / 3 - 2') == 3
 
 
-def test_sub_mul_add_mul_sub():
+def test_sub_mul_add_mul_sub() -> None:
     assert roll('40 - 3 * 7 + 2 * 9 - 20') == 17
 
 
-def test_parens():
+def test_parens() -> None:
     assert roll('(2 + 5) * 3') == 21
 
 
-def test_parens1():
+def test_parens1() -> None:
     assert roll('(4 + 2) * 3') == 18
 
 
-def test_parens2():
+def test_parens2() -> None:
     assert roll('3 * (10 - 5)') == 15
 
 
-def test_parens3():
+def test_parens3() -> None:
     assert roll('(2 + 8 / (9 - 5)) * 3') == 12
 
 
-def test_modulus1():
+def test_modulus1() -> None:
     assert roll('5 % 2') == 1
 
 
-def test_modulus2():
+def test_modulus2() -> None:
     assert roll('23 % 13') == 10
 
 
-def test_modulus3():
+def test_modulus3() -> None:
     assert roll('19 % 12') == 7
 
 
-def test_modulus4():
+def test_modulus4() -> None:
     assert roll('1 % 112') == 1
 
 
-def test_modulus5():
+def test_modulus5() -> None:
     assert roll('66 % 11') == 0
 
 
-def test_exponential1():
+def test_exponential1() -> None:
     assert roll('6 ** 3') == 216
 
 
-def test_exponential2():
+def test_exponential2() -> None:
     assert roll('7 ** 5') == 16807
 
 
-def test_factorial1():
+def test_factorial1() -> None:
     assert roll('5!') == 120
 
 
-def test_factorial2():
+def test_factorial2() -> None:
     assert roll('0!') == 1
 
 
-def test_bad_factorial1():
+def test_bad_factorial1() -> None:
     with pytest.raises(ValueError):
         roll('-256!')
 
 
-def test_bad_parens():
+def test_bad_parens() -> None:
     with pytest.raises(Exception):
         roll('((')
 
 
-def test_bad_parens2():
+def test_bad_parens2() -> None:
     with pytest.raises(Exception):
         roll('(2 +)')
 
 
-def test_add_explonential():
+def test_add_explonential() -> None:
     assert roll("3 + 7**3") == 346
 
 
@@ -177,7 +177,7 @@ def test_add_explonential():
     ('e', math.e),
     ('E', math.e),
 ])
-def test_constants(equation: str, result: Union[int, float]):
+def test_constants(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
 
 
@@ -211,5 +211,5 @@ def test_constants(equation: str, result: Union[int, float]):
     ('5 ** sqrt 9', 125),
     ('sqrt sqrt 10000', 10),
 ])
-def test_sqrt(equation: str, result: Union[int, float]):
+def test_sqrt(equation: str, result: Union[int, float]) -> None:
     assert roll(equation) == result
