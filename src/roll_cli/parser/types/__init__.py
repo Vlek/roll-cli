@@ -1,3 +1,12 @@
+"""Contains types used for the dice roller.
+
+Types:
+    - EvaluationResult:
+
+    - RollOption:
+
+    - RollResults:
+"""
 from typing import Tuple
 
 from .evaluationresults import EvaluationResults as EvaluationResults
@@ -9,4 +18,4 @@ __all__: Tuple[str, ...] = (
     "EvaluationResults",
     "RollOption",
     "RollResults",
-    )
+)

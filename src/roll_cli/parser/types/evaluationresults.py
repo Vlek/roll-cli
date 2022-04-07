@@ -1,5 +1,4 @@
-"""
-Defines EvaluationResults object to hold parsing state throughout evaluation.
+"""Defines EvaluationResults object to hold parsing state throughout evaluation.
 
 The EvaluationResults object is meant to solve an issue that was encountered
 when attempting to add in dice roll modifiers. Instead of having the
@@ -24,15 +23,15 @@ acceptable range. Better, more informative tests can be made this way.
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional, Union
-from math import sqrt, ceil, factorial
+from math import ceil
+from math import factorial
+from math import sqrt
 
 from .rollresults import RollResults
 
 
 class Operators(Enum):
-    """
-    Helper operator names for handling operations.
+    """Helper operator names for handling operations.
 
     This makes it so that we don't have magic strings
     everywhere. Instead, we can do things like:
@@ -50,18 +49,19 @@ class Operators(Enum):
     die = "d"
 
 
-class EvaluationResults():
+class EvaluationResults:
     """Hold the current state of all rolls and the total from other ops."""
 
-    def __init__(self: EvaluationResults,
-                 value: Union[int, float, EvaluationResults] = 0,
-                 rolls: Union[List[RollResults], None] = None
-                 ) -> None:
+    def __init__(
+        self: EvaluationResults,
+        value: int | float | EvaluationResults = 0,
+        rolls: list[RollResults] | None = None,
+    ) -> None:
         """Initialize an EvaluationResults object."""
         if rolls is None:
             rolls = []
 
-        total: Optional[Union[int, float]] = None
+        total: int | float | None = None
         history: list[str] = []
 
         if isinstance(value, EvaluationResults):
@@ -71,12 +71,11 @@ class EvaluationResults():
         else:
             total = value
 
-        self.total: Union[int, float] = total
-        self.rolls: List[RollResults] = rolls
-        self.history: List[str] = history
+        self.total: int | float = total
+        self.rolls: list[RollResults] = rolls
+        self.history: list[str] = history
 
-    def add_roll(self: EvaluationResults,
-                 roll: RollResults) -> None:
+    def add_roll(self: EvaluationResults, roll: RollResults) -> None:
         """Add the results of a roll to the total evaluation results."""
         self.total += roll.total()
         self.rolls.append(roll)
@@ -96,17 +95,17 @@ class EvaluationResults():
 
         self.total = new_total
 
-    def _process_right_hand_value(self: EvaluationResults,
-            x: Union[EvaluationResults, int, float]) -> Union[int, float]:
-        """
-        Allows two ER objects to have their dice and history combined.
+    def _process_right_hand_value(
+        self: EvaluationResults, x: EvaluationResults | int | float
+    ) -> int | float:
+        """Allows two ER objects to have their dice and history combined.
 
         This is important so that the history and rolls are preserved
         otherwise we lose key pieces of information that would disallow us
         from being able to make modifications to rolls, i.e., keep notation,
         as well as being able to give a complete verbose output when finished.
         """
-        right_hand_value: Union[int, float, EvaluationResults]
+        right_hand_value: int | float | EvaluationResults
 
         if isinstance(x, (int, float)):
             right_hand_value = x
@@ -120,8 +119,7 @@ class EvaluationResults():
         return right_hand_value
 
     def _collect_rolls(self: EvaluationResults, er: EvaluationResults) -> None:
-        """
-        Add all rolls together if both objects are EvaluationResults.
+        """Add all rolls together if both objects are EvaluationResults.
 
         The way that we do this is by extending the other object's rolls
         in place for efficiency's sake and then we set our object to that
@@ -132,8 +130,7 @@ class EvaluationResults():
         self.rolls = er.rolls
 
     def __str__(self: EvaluationResults) -> str:
-        """
-        Return a string representation of the eval results.
+        """Return a string representation of the eval results.
 
         This will output all of the history of the dice roll
         along with the total sum.
@@ -152,7 +149,7 @@ class EvaluationResults():
         34 + 4: 38
         38
         """
-        history_string: str = '\n'.join([h for h in self.history]) + "\n"
+        history_string: str = "\n".join([h for h in self.history]) + "\n"
 
         return f"{history_string}{self.total}"
 
@@ -183,186 +180,222 @@ class EvaluationResults():
         self.total = -self.total
         return self
 
-    def __add__(self: EvaluationResults,
-                x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __add__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Add a given value to the evaluation result total."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total += right_hand_value
-        self.history.append(f"Adding: {previous_total} + {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Adding: {previous_total} + {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __iadd__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __iadd__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Add a given value to the evaluation result total."""
         return self.__add__(x)
 
-    def __radd__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __radd__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Add a given value to the evaluation result total."""
         return self.__add__(x)
 
-    def __sub__(self: EvaluationResults,
-                x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __sub__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total -= right_hand_value
-        self.history.append(f"Subtracting: {previous_total} - {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Subtracting: {previous_total} - {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __isub__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __isub__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
         return self.__sub__(x)
 
-    def __rsub__(self: EvaluationResults,
-                 x: Union[int, float]) -> EvaluationResults:
+    def __rsub__(self: EvaluationResults, x: int | float) -> EvaluationResults:
         """Subtract a given value from the evaluation result total."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total = right_hand_value - self.total
-        self.history.append(f"Adding: {right_hand_value} - {previous_total} = {self.total}")
+        self.history.append(
+            f"Adding: {right_hand_value} - {previous_total} = {self.total}"
+        )
 
         return self
 
-
-    def __mul__(self: EvaluationResults,
-                x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __mul__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Multiply the evaluation result total by a given value."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total *= right_hand_value
-        self.history.append(f"Multiplying: {previous_total} * {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Multiplying: {previous_total} * {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __imul__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __imul__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Multiply the evaluation result total by a given value."""
         return self.__mul__(x)
 
-    def __rmul__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __rmul__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Multiply the evaluation result total by a given value."""
         return self.__mul__(x)
 
-    def __truediv__(self: EvaluationResults,
-                    x: Union[int, float, EvaluationResults]
-                    ) -> EvaluationResults:
+    def __truediv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total /= right_hand_value
-        self.history.append(f"Dividing: {previous_total} / {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Dividing: {previous_total} / {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __itruediv__(self: EvaluationResults,
-                     x: Union[int, float, EvaluationResults]
-                     ) -> EvaluationResults:
+    def __itruediv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
         return self.__truediv__(x)
 
-    def __rtruediv__(self: EvaluationResults,
-                     x: Union[int, float, EvaluationResults]
-                     ) -> EvaluationResults:
+    def __rtruediv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total = right_hand_value / self.total
-        self.history.append(f"Dividing: {right_hand_value} / {previous_total} = {self.total}")
+        self.history.append(
+            f"Dividing: {right_hand_value} / {previous_total} = {self.total}"
+        )
 
         return self
 
-    def __floordiv__(self: EvaluationResults,
-                     x: Union[int, float, EvaluationResults]
-                     ) -> EvaluationResults:
+    def __floordiv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total //= right_hand_value
-        self.history.append(f"Floor dividing: {previous_total} // {right_hand_value} = {self.total}")
-        
+        self.history.append(
+            f"Floor dividing: {previous_total} // {right_hand_value} = {self.total}"
+        )
+
         return self
 
-    def __ifloordiv__(self: EvaluationResults,
-                      x: Union[int, float, EvaluationResults]
-                      ) -> EvaluationResults:
+    def __ifloordiv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
         return self.__floordiv__(x)
 
-    def __rfloordiv__(self: EvaluationResults,
-                      x: Union[int, float, EvaluationResults]
-                      ) -> EvaluationResults:
+    def __rfloordiv__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Divide the evaluation result total by a given number and floor."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total = right_hand_value // self.total
-        self.history.append(f"Floor dividing: {right_hand_value} // {previous_total} = {self.total}")
+        self.history.append(
+            f"Floor dividing: {right_hand_value} // {previous_total} = {self.total}"
+        )
 
         return self
 
-    def __mod__(self: EvaluationResults,
-                x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __mod__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total %= right_hand_value
-        self.history.append(f"Modulus dividing: {previous_total} % {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Modulus dividing: {previous_total} % {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __imod__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __imod__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
         return self.__mod__(x)
 
-    def __rmod__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __rmod__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Perform modulus divison on the evaluation total with given value."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total = right_hand_value % self.total
-        self.history.append(f"Modulus dividing: {right_hand_value} % {previous_total} = {self.total}")
+        self.history.append(
+            f"Modulus dividing: {right_hand_value} % {previous_total} = {self.total}"
+        )
 
         return self
 
-    def __pow__(self: EvaluationResults,
-                x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __pow__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
         self.total **= right_hand_value
-        self.history.append(f"Exponentiating: {previous_total} ** {right_hand_value} = {self.total}")
+        self.history.append(
+            f"Exponentiating: {previous_total} ** {right_hand_value} = {self.total}"
+        )
 
         return self
 
-    def __ipow__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __ipow__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
         return self.__pow__(x)
 
-    def __rpow__(self: EvaluationResults,
-                 x: Union[int, float, EvaluationResults]) -> EvaluationResults:
+    def __rpow__(
+        self: EvaluationResults, x: int | float | EvaluationResults
+    ) -> EvaluationResults:
         """Exponentiate the evaluation results by the given value."""
-        right_hand_value: Union[int, float] = self._process_right_hand_value(x)
+        right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
 
-        self.total = right_hand_value ** self.total
-        self.history.append(f"Exponentiating: {right_hand_value} ** {previous_total} = {self.total}")
+        self.total = right_hand_value**self.total
+        self.history.append(
+            f"Exponentiating: {right_hand_value} ** {previous_total} = {self.total}"
+        )
 
         return self
