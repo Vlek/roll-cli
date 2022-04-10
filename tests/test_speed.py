@@ -1,5 +1,4 @@
-"""
-Perform speed tests on the project to ensure performant parsing.
+"""Perform speed tests on the project to ensure performant parsing.
 
 One of the main things that I set out to do with this project is
 create a performant, feature-rich dice roller. To ensure that I
@@ -14,7 +13,6 @@ on my desktop, it may not run as well on Termux on an older phone.
 Further reading:
 - https://therenegadecoder.com/code/how-to-performance-test-python-code/
 """
-
 import timeit
 
 import pytest
@@ -29,9 +27,7 @@ def test_basic_roll_time() -> None:
     iterations: int = 1000
 
     result = timeit.timeit(
-        "roll()",
-        "gc.enable();from src.roll_cli import roll",
-        number=iterations
+        "roll()", "gc.enable();from src.roll_cli import roll", number=iterations
     )
     current_speed: float = result / iterations
 
@@ -42,10 +38,10 @@ def test_basic_roll_time() -> None:
 @pytest.mark.skip(
     reason="""This is failing because of recursion depth, not speed.
     This issue likely will be addressed once the recursion check
-    issues are addressed.""")
+    issues are addressed."""
+)
 def test_inception_parens() -> None:
-    """
-    Test where we are performant even with multiple parens.
+    """Test where we are performant even with multiple parens.
 
     This is something that has been a real performance killer
     for us in the past. What happens is it causes repeated,
@@ -59,7 +55,7 @@ def test_inception_parens() -> None:
     result = timeit.timeit(
         "roll('((((((((((((((((1 + 1))))))))))))))))')",
         "gc.enable();from roll import roll",
-        number=iterations
+        number=iterations,
     )
     current_speed: float = result / iterations
 

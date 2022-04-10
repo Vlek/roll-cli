@@ -1,133 +1,87 @@
-
+"""Test that expressions are being parsed correctly."""
 # from roll import roll
 import pytest
+
 import roll_cli.parser.diceparser as dp
 
 parser = dp.DiceParser()
 
 
-# def test_for_recursive_issues():
-#     """
-#     This is a built-in test from pyparsing that ensures
-#     that the regex that is created from the supplied
-#     grammar does not have any recursive issues.
+@pytest.mark.skip()
+def test_for_recursive_issues():
+    """Test to ensure no recursive issues exist in parser.
 
-#     From what I can gather, it's not the end of the world
-#     if there are any, but I am sure it's not a good thing
-#     to leave them in there and could effect the speed.
-#     """
-#     assert parser._parser.validate()
+    This is a built-in test from pyparsing that ensures
+    that the regex that is created from the supplied
+    grammar does not have any recursive issues.
 
-
-def test_interpret_number() -> None:
-    assert parser.evaluate('42') == 42
+    From what I can gather, it's not the end of the world
+    if there are any, but I am sure it's not a good thing
+    to leave them in there and could effect the speed.
+    """
+    assert parser._parser.validate()
 
 
-def test_interpret_neg_number() -> None:
-    assert parser.evaluate('-64') == -64
+@pytest.mark.parametrize(
+    "equation,result",
+    [
+        ("42", 42),
+        ("-64", -64),
+        ("           239       ", 239),
+        ("1.0", 1.0),
+        ("3.1415", 3.1415),
+        # I don't like this, but Pyparser allows it.
+        ("9.", 9.0),
+        (".098", 0.098),
+        ("-2.0", -2.0),
+        ("-700.", -700.0),
+    ],
+)
+def test_interpret_number(equation: str, result: int | float) -> None:
+    """Test that the parser parses numbers correctly."""
+    assert parser.evaluate(equation) == result
 
 
-def test_interpret_number_with_spaces() -> None:
-    assert parser.evaluate('       239      ') == 239
-
-
-def test_float1() -> None:
-    assert parser.evaluate('1.0') == 1.0
-
-
-def test_float2() -> None:
-    assert parser.evaluate('3.1415') == 3.1415
-
-
-def test_float3() -> None:
-    # I don't like this, but that's what pyparsing does.
-    assert parser.evaluate('9.') == 9.0
-
-
-def test_float4() -> None:
-    # I don't like this either, but it handles this.
-    assert parser.evaluate('.098') == 0.098
-
-
-def test_neg_float1() -> None:
-    assert parser.evaluate('-2.0') == -2.0
-
-
-def test_neg_float2() -> None:
-    assert parser.evaluate('-700.') == -700.0
-
-
-def test_interpret_dice() -> None:
-    assert parser.evaluate('d20') in range(1, 21)
-
-
-def test_interpret_dice2() -> None:
-    assert parser.evaluate('1d20') in range(1, 21)
-
-
-def test_interpret_dice_with_spaces() -> None:
-    assert parser.evaluate('       2    d  8           ') in range(2, 17)
+@pytest.mark.parametrize(
+    ("equation", "range_low", "range_high"),
+    [
+        ("d20", 1, 20),
+        ("1d20", 1, 20),
+        ("       2    d  8           ", 2, 16),
+    ],
+)
+def test_interpret_dice(equation: str, range_low: int, range_high: int) -> None:
+    """Test that dice parsing is functioning correctly."""
+    assert parser.evaluate(equation) in range(range_low, range_high)
 
 
 def test_interpret_subtract_negative() -> None:
-    assert parser.evaluate('1 - -5') == 6
+    """Test subtracting a negative number."""
+    assert parser.evaluate("1 - -5") == 6
 
 
-# This test currently fails on the master branch as well.
-# def test_unary_negative():
-#     assert parser.evaluate('--10') == 10
+def test_unary_negative():
+    """Test that the unary minus works on a negative number."""
+    assert parser.evaluate("--10") == 10
 
 
-def test_bad_input1() -> None:
+@pytest.mark.parametrize(
+    "equation",
+    [
+        ("bad input"),
+        ("2 + (2 + 3"),
+        ("2 +"),
+        ("+ 6"),
+        ("(6**)2"),
+        ("d"),
+        ("+"),
+        ("*"),
+        ("-"),
+        ("/"),
+        ("%"),
+    ],
+)
+def test_bad_input(equation: str) -> None:
+    """Test that things that should not work do not work."""
     with pytest.raises(Exception):
-        parser.evaluate('bad input')
-
-
-def test_bad_input2() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('2 + (2 + 3')
-
-
-def test_bad_input3() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('2 +')
-
-
-def test_bad_input4() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('+ 6')
-
-
-def test_bad_input5() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('(6**)2')
-
-
-def test_bad_input6() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('d')
-
-
-def test_bad_input7() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('+')
-
-
-def test_bad_input8() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('*')
-
-
-def test_bad_input9() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('-')
-
-
-def test_bad_input10() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('/')
-
-
-def test_bad_input11() -> None:
-    with pytest.raises(Exception):
-        parser.evaluate('%')
+        parser.evaluate(equation)

@@ -55,6 +55,8 @@ from .types import RollResults
 
 ParserElement.enablePackrat()
 
+ROLL_TYPE: RollOption
+
 
 class DiceParser:
     """Parser for evaluating dice strings."""
@@ -185,7 +187,7 @@ class DiceParser:
         num: int | float | EvaluationResults,
     ) -> int | float | EvaluationResults:
         global ROLL_TYPE
-        roll_option = ROLL_TYPE
+        roll_option: RollOption = ROLL_TYPE
         return roll_dice(sides, num, roll_option)
 
     @staticmethod

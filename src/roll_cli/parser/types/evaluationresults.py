@@ -151,7 +151,12 @@ class EvaluationResults:
         """
         history_string: str = "\n".join([h for h in self.history]) + "\n"
 
-        return f"{history_string}{self.total}"
+        total_string: str = f"{self.total}"
+
+        if isinstance(self.total, float) and self.total % 1 == 0:
+            total_string = f"{int(self.total)}"
+
+        return f"{history_string}{total_string}"
 
     def __int__(self: EvaluationResults) -> int:
         """Change the evaluation result total to an integer."""
