@@ -1,5 +1,7 @@
 """Test that expressions are being parsed correctly."""
 # from roll import roll
+from typing import Union
+
 import pytest
 
 import roll_cli.parser.diceparser as dp
@@ -8,7 +10,7 @@ parser = dp.DiceParser()
 
 
 @pytest.mark.skip()
-def test_for_recursive_issues():
+def test_for_recursive_issues() -> None:
     """Test to ensure no recursive issues exist in parser.
 
     This is a built-in test from pyparsing that ensures
@@ -37,7 +39,7 @@ def test_for_recursive_issues():
         ("-700.", -700.0),
     ],
 )
-def test_interpret_number(equation: str, result: int | float) -> None:
+def test_interpret_number(equation: str, result: Union[int, float]) -> None:
     """Test that the parser parses numbers correctly."""
     assert parser.evaluate(equation) == result
 
@@ -60,7 +62,7 @@ def test_interpret_subtract_negative() -> None:
     assert parser.evaluate("1 - -5") == 6
 
 
-def test_unary_negative():
+def test_unary_negative() -> None:
     """Test that the unary minus works on a negative number."""
     assert parser.evaluate("--10") == 10
 
