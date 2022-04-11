@@ -18,7 +18,7 @@ from roll_cli.parser.types import EvaluationResults
 )
 def test_dice_with_addition(equation: str, range_low: int, range_high: int) -> None:
     """Testing to ensure that dice rolls work with the addition operator."""
-    assert roll(equation) in range(range_low, range_high)
+    assert roll(equation) in range(range_low, range_high + 1)
 
 
 @pytest.mark.parametrize(
@@ -32,7 +32,7 @@ def test_dice_with_multiplication(
     equation: str, range_low: int, range_high: int
 ) -> None:
     """Testing to ensure that dice rolls work with the multiplication operator."""
-    assert roll(equation) in range(range_low, range_high)
+    assert roll(equation) in range(range_low, range_high + 1)
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_dice_with_multiple_operators(
     equation: str, range_low: int, range_high: int
 ) -> None:
     """Testing to ensure dice rolling works with multiple operators at once."""
-    assert roll(equation) in range(range_low, range_high)
+    assert roll(equation) in range(range_low, range_high + 1)
 
 
 @pytest.mark.parametrize(

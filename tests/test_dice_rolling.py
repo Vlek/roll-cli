@@ -65,7 +65,7 @@ def test_float_roll(equation: str, range_low: int, range_high: int) -> None:
 )
 def test_float_dice_sides(equation: str, range_low: int, range_high: int) -> None:
     """Test that floats for dice sides work as intended."""
-    assert roll(equation) in range(range_low, range_high)
+    assert roll(equation) in range(range_low, range_high + 1)
 
 
 def test_1d_neg20() -> None:

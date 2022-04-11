@@ -38,7 +38,7 @@ def test_order_of_operations(equation: str, result: int) -> None:
 )
 def test_inception_dice(equation: str, range_low: int, range_high: int) -> None:
     """Test putting dice rolls together one after another."""
-    assert roll(equation) in range(range_low, range_high)
+    assert roll(equation) in range(range_low, range_high + 1)
 
 
 @pytest.mark.parametrize(
