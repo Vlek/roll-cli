@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-
-"""
-test_probabilities
+"""Test the probabilities of dice rolls.
 
 In this sequence of tests, we will be figuring out whether the dice
 rolls fit roughly with expected probabilistic ranges.
@@ -18,5 +16,4 @@ In order to test these rough probabilities, I will be using the
 website https://anydice.com/ as they have a nicely done out graph
 system for visualizing as well as the ability to export the numbers
 into an easy-to-consume format.
-
 """
