@@ -49,7 +49,7 @@ def test_interpret_number(equation: str, result: Union[int, float]) -> None:
     [
         ("d20", 1, 20),
         ("1d20", 1, 20),
-        ("       2    d  8           ", 2, 16),
+        ("       2    d  8           ", 2, 17),
     ],
 )
 def test_interpret_dice(equation: str, range_low: int, range_high: int) -> None:
