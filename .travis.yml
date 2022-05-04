@@ -3,14 +3,15 @@ python:
   - 3.7
   - 3.8
   - 3.9
+  - 3.10
 
 before_install:
-- pip install poetry
+  - pip install poetry
 
 install:
-- poetry install
+  - poetry install
 
 script:
-- poetry run coverage run --source roll -m pytest
+  - poetry run coverage run --source roll -m pytest
 
 after_success: codecov

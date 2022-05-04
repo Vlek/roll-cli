@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-
-"""
-Dice roller CLI Script.
+"""Dice roller CLI Script.
 
 Makes it easy to roll dice via command line and is able handle the basic
 math functions, including parens!
@@ -15,31 +13,32 @@ etc.
 """
 from typing import Union
 
-from roll.parser import DiceParser
-from roll.parser.types import EvaluationResults, RollOption
+from .parser.diceparser import DiceParser
+from .parser.types import EvaluationResults
+from .parser.types import RollOption
 
 _DICE_PARSER = DiceParser()
 
 GOOD_CHARS: str = "0123456789d-/*() %+.!^pPiIeEsSqQrRtTkK"
 
 
-def roll(expression: str = '',
-         verbose: bool = False,
-         roll_option: RollOption = RollOption.Normal,
-         ) -> Union[int, float, EvaluationResults]:
+def roll(
+    expression: str = "",
+    verbose: bool = False,
+    roll_option: RollOption = RollOption.Normal,
+) -> Union[int, float, EvaluationResults]:
     """Evalute a string for dice and mathematical operations and calculate."""
     input_had_bad_chars: bool = len(expression.strip(GOOD_CHARS)) > 0
 
     if input_had_bad_chars:
-        raise ValueError('Input contained invalid characters.')
+        raise ValueError("Input contained invalid characters.")
 
-    if expression.strip() == '':
+    if expression.strip() == "":
         expression = "1d20"
 
-    result: Union[
-        int,
-        float,
-        EvaluationResults] = _DICE_PARSER.evaluate(expression, roll_option)
+    result: Union[int, float, EvaluationResults] = _DICE_PARSER.evaluate(
+        expression, roll_option
+    )
 
     if verbose:
         return result

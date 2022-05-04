@@ -1,18 +1,15 @@
-"""
-Create options that change the outcomes of dice rolls.
+"""Create options that change the outcomes of dice rolls.
 
 In order to have the feature that we allow for minimum and maximum rolls,
 we need to be able to flag that that is an option within our dice roller.
 This feature is required to play some games, including D&D where critical
 hits and misses are sometimes used with these options.
 """
-
 from enum import Enum
 
 
 class RollOption(Enum):
-    """
-    Enum for expressing dice roll behavior.
+    """Enum for expressing dice roll behavior.
 
     Available roll options:
         Minimum: The dice will return the lowest possible roll.
