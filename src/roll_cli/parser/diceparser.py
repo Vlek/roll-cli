@@ -26,18 +26,19 @@ from __future__ import annotations
 
 from math import e
 from math import pi
+from typing import Any
 from typing import Callable
 
-from pyparsing import CaselessKeyword  # type: ignore
+from pyparsing import CaselessKeyword
 from pyparsing import CaselessLiteral
-from pyparsing import Forward
 from pyparsing import infixNotation
 from pyparsing import Literal
 from pyparsing import oneOf
 from pyparsing import opAssoc
-from pyparsing import ParseException
 from pyparsing import ParserElement
+from pyparsing import ParseResults
 from pyparsing import pyparsing_common
+from pyparsing.exceptions import ParseException
 
 from .operations import add
 from .operations import expo
@@ -87,7 +88,7 @@ class DiceParser:
         self._parser = self._create_parser()
 
     @staticmethod
-    def _create_parser() -> Forward:
+    def _create_parser() -> ParserElement:
         """Create an instance of a dice roll string parser."""
         atom = (
             CaselessLiteral("d%").setParseAction(
@@ -280,14 +281,12 @@ class DiceParser:
 
     def parse(
         self: DiceParser, dice_string: str, roll_option: RollOption = RollOption.Normal
-    ) -> list[int | float | EvaluationResults]:
+    ) -> ParseResults:
         """Parse well-formed dice roll strings."""
         global ROLL_TYPE
         ROLL_TYPE = roll_option
         try:
-            result: list[int | float | EvaluationResults] = self._parser.parseString(
-                dice_string, parseAll=True
-            )
+            result: ParseResults = self._parser.parseString(dice_string, parseAll=True)
         except ParseException as err:
             raise SyntaxError("Unable to parse input string: " + dice_string) from err
 
@@ -299,4 +298,9 @@ class DiceParser:
         roll_option: RollOption = RollOption.Normal,
     ) -> int | float | EvaluationResults:
         """Parse and evaluate the given dice string."""
-        return self.parse(dice_string, roll_option)[0]
+        parse_result: Any = self.parse(dice_string, roll_option)[0]
+
+        if not isinstance(parse_result, (int, float, EvaluationResults)):
+            raise TypeError(f"Invalid return type given in result: {parse_result}")
+
+        return parse_result

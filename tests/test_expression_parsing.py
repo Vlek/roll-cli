@@ -9,21 +9,6 @@ import roll_cli.parser.diceparser as dp
 parser = dp.DiceParser()
 
 
-@pytest.mark.skip()
-def test_for_recursive_issues() -> None:
-    """Test to ensure no recursive issues exist in parser.
-
-    This is a built-in test from pyparsing that ensures
-    that the regex that is created from the supplied
-    grammar does not have any recursive issues.
-
-    From what I can gather, it's not the end of the world
-    if there are any, but I am sure it's not a good thing
-    to leave them in there and could effect the speed.
-    """
-    assert parser._parser.validate()
-
-
 @pytest.mark.parametrize(
     "equation,result",
     [
@@ -54,7 +39,7 @@ def test_interpret_number(equation: str, result: Union[int, float]) -> None:
 )
 def test_interpret_dice(equation: str, range_low: int, range_high: int) -> None:
     """Test that dice parsing is functioning correctly."""
-    assert parser.evaluate(equation) in range(range_low, range_high)
+    assert parser.evaluate(equation) in range(range_low, range_high + 1)
 
 
 def test_interpret_subtract_negative() -> None:

@@ -5,6 +5,18 @@ from roll_cli.parser.types import EvaluationResults
 from roll_cli.parser.types import RollResults
 
 
+def test_addition() -> None:
+    """Test the normal addition operation."""
+    er = EvaluationResults(200)
+    assert er + 5 == 205
+
+
+def test_subtraction() -> None:
+    """Test the normal subtraction operation."""
+    er = EvaluationResults(200)
+    assert er - 5 == 195
+
+
 def test_eq() -> None:
     """Test that the comparison operator works as expected."""
     er = EvaluationResults(200)

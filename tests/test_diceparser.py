@@ -41,6 +41,18 @@ def test_handle_sqrt() -> None:
     github issue (#45)"""
 )
 def test_pyparsing_recursion_issues() -> None:
-    """Ensure no recursion issues present."""
+    """Test to ensure no recursive issues exist in parser.
+
+    This is a built-in test from pyparsing that ensures
+    that the regex that is created from the supplied
+    grammar does not have any recursive issues.
+
+    From what I can gather, it's not the end of the world
+    if there are any, but I am sure it's not a good thing
+    to leave them in there and could effect the speed.
+
+    With the latest update, it now throws an error instead
+    of giving a boolean.
+    """
     dp = DiceParser()
     dp._parser.validate()
