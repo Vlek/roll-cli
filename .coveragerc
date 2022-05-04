@@ -4,6 +4,7 @@
     omit =
         # ignore all test cases in tests/
         tests/*
+        *__init__*
     exclude_lines =
         pragma: no cover
         if __name__ == .__main__.:

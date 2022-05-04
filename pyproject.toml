@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roll-cli"
-version = "0.0.0"
+version = "2.0.0"
 description = "Dice roller with all of the features you could want."
 authors = ["Derek McCammond <derek.mccammond@protonmail.com>"]
 license = "GPL-3.0"
