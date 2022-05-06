@@ -39,35 +39,56 @@ Roll
 Features
 --------
 
-* TODO
+Dice roller CLI Script
+
+Makes it easy to roll dice via command line and is able handle the basic math functions, including parens!
+
+Feature-packed, including:
+- Basic math functions
+- Dice rolling with variable sides and number of dice
+- Correct order of operations (with some liberty taken for where to put dice notation)
+- Keep notation, specify the number of dice whose value you would like to keep, discarding the rest
 
 
 Requirements
 ------------
 
-* TODO
+While not required, Pipx helps manage package dependencies and ensure that they do not conflict.
 
 
 Installation
 ------------
 
-You can install *Roll* via pip_ from PyPI_:
+You can install *Roll* via pipx_ from PyPI_:
 
 .. code:: console
 
-   $ pip install roll-cli
+   $ pipx install roll-cli
 
 
 Usage
 -----
 
-Please see the `Command-line Reference <Usage_>`_ for details.
+After installation, the `roll` command is then made globally available.
+
+.. code:: console
+   :caption: Example usage
+
+   $ roll
+   8
+
+   $ roll 4d6
+   14
+
+Please see the `Command-line Reference <Usage_>`_ for further details.
 
 
 Contributing
 ------------
 
-Contributions are very welcome.
+This is just a fun learning project for me, so I am trying to do all the work myself.
+If you believe that there are features that I should incorporate, please do not hesitate to create a feature request.
+
 To learn more, see the `Contributor Guide`_.
 
 
@@ -96,7 +117,7 @@ This project was generated from `@cjolowicz`_'s `Hypermodern Python Cookiecutter
 .. _PyPI: https://pypi.org/
 .. _Hypermodern Python Cookiecutter: https://github.com/cjolowicz/cookiecutter-hypermodern-python
 .. _file an issue: https://github.com/vlek/roll-cli/issues
-.. _pip: https://pip.pypa.io/
+.. _pipx: https://pypa.github.io/pipx/
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst
 .. _Usage: https://roll-cli.readthedocs.io/en/latest/usage.html
