@@ -8,13 +8,21 @@ readme = "README.rst"
 homepage = "https://github.com/vlek/roll-cli"
 repository = "https://github.com/vlek/roll-cli"
 documentation = "https://roll-cli.readthedocs.io"
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-]
+classifiers = ["Development Status :: 5 - Production/Stable"]
 keywords = [
-    "dice", "die", "roll", "rolling", "game",
-    "gaming", "rp", "rpg", "parse", "parser", "parsing",
-    "cli", "terminal"
+  "dice",
+  "die",
+  "roll",
+  "rolling",
+  "game",
+  "gaming",
+  "rp",
+  "rpg",
+  "parse",
+  "parser",
+  "parsing",
+  "cli",
+  "terminal",
 ]
 
 [tool.poetry.urls]
@@ -27,11 +35,11 @@ pyparsing = "^3.0.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
-coverage = {extras = ["toml"], version = "^6.1"}
+coverage = { extras = ["toml"], version = "^6.1" }
 safety = "^1.10.3"
 mypy = "^0.950"
 typeguard = "^2.13.2"
-xdoctest = {extras = ["colors"], version = "^1.0.0"}
+xdoctest = { extras = ["colors"], version = "^1.0.0" }
 sphinx = "^4.3.0"
 sphinx-autobuild = ">=2021.3.14"
 pre-commit = "^2.15.0"
@@ -58,12 +66,14 @@ source = ["src", "*/site-packages"]
 tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
+parallel = true
 branch = true
-source = ["roll_cli", "tests"]
+source = ["roll_cli"]
+omit = ["tests"]
 
 [tool.coverage.report]
-show_missing = true
-fail_under = 100
+show_missing = false
+fail_under = 90
 
 [tool.mypy]
 strict = true

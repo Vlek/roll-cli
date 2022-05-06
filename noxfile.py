@@ -135,8 +135,6 @@ def tests(session: Session) -> None:
         session.run(
             "coverage",
             "run",
-            "--parallel-mode",
-            "--branch",
             "-m",
             "pytest",
             *session.posargs,
