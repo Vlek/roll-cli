@@ -1,4 +1,0 @@
-# Good variable names which should always be accepted.
-# We have to go with this because they haven't fixed this yet:
-# https://github.com/PyCQA/pylint/issues/2018
-good-names=x
