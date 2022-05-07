@@ -130,7 +130,7 @@ def test_inception_dice(equation: str, range_low: int, range_high: int) -> None:
         ("10d5k4k3k2k1", 1, 5),
         ("10d6K5k4", 4, 24),
         # Multiple dice rolls
-        ("4d6K1d2", 2, 12),
+        ("4d6K1d2", 1, 12),
         # With parens
         ("(4+1)d100k5", 5, 500),
         ("(4d100k2)K1", 1, 100),
@@ -162,7 +162,7 @@ def test_keep(equation: str, range_low: int, range_high: int) -> None:
         ("10d5x4x3x2", 1, 5),
         ("10d6X5x4", 1, 6),
         # Multiple dice rolls
-        ("4d6X1d2", 2, 12),
+        ("4d6X1d2", 2, 18),
         # With parens
         ("(4+2)d100x5", 1, 100),
         ("(4d100x2)X1", 1, 100),
