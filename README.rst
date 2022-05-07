@@ -36,8 +36,8 @@ Roll-cli
 .. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Black
-.. |Asciinema| image:: https://asciinema.org/a/SUo6PWMWij0dWWO2fuP5jhHU2.svg
-   :target: https://asciinema.org/a/SUo6PWMWij0dWWO2fuP5jhHU2
+.. |Asciinema| image:: https://asciinema.org/a/URGcrvqF0ahiBSHWXx5ZcLwBS.svg
+   :target: https://asciinema.org/a/URGcrvqF0ahiBSHWXx5ZcLwBS
    :alt: Asciinema usage example
 
 
