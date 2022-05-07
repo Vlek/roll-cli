@@ -1,4 +1,4 @@
-Roll
+Roll-cli
 ====
 
 |PyPI| |Status| |Python Version| |License|
@@ -6,6 +6,8 @@ Roll
 |Read the Docs| |Tests| |Codecov|
 
 |pre-commit| |Black|
+
+|Asciinema|
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/roll-cli.svg
    :target: https://pypi.org/project/roll-cli/
@@ -34,40 +36,72 @@ Roll
 .. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Black
+.. |Asciinema| image:: https://asciinema.org/a/URGcrvqF0ahiBSHWXx5ZcLwBS.svg
+   :target: https://asciinema.org/a/URGcrvqF0ahiBSHWXx5ZcLwBS
+   :alt: Asciinema usage example
 
 
 Features
 --------
 
-* TODO
+Dice roller CLI Script
+
+Makes it easy to roll dice via command line and is able handle the basic math functions, including parens!
+
+Feature-packed, including:
+
+- Basic math functions
+- Dice rolling with variable sides and number of dice
+- Correct order of operations (with some liberty taken for where to put dice notation)
+- Verbose printing to see what each individual dice roll was
+- Ability to roll the minimum or maximum for each roll
+- Keep notation, specify the number of dice whose value you would like to keep, discarding the rest
 
 
 Requirements
 ------------
 
-* TODO
+- Python >=3.7
+- While not required, Pipx helps manage package dependencies and ensure that they do not conflict.
 
 
 Installation
 ------------
 
-You can install *Roll* via pip_ from PyPI_:
+You can install *Roll* via pipx_ from PyPI_:
 
 .. code:: console
 
-   $ pip install roll-cli
+   $ pipx install roll-cli
 
 
 Usage
 -----
 
-Please see the `Command-line Reference <Usage_>`_ for details.
+After installation, the `roll` command is then made globally available.
+
+.. code:: console
+
+   $ roll
+   8
+
+   $ roll 4d6
+   14
+
+   $ roll 10d6K3 -v
+   Rolled: 10d6: [2, 5, 5, 4, 2, 4, 3, 5, 3, 6]
+   Keeping highest: 3: [5, 5, 6]
+   16
+
+Please see the `Command-line Reference <Usage_>`_ for further details.
 
 
 Contributing
 ------------
 
-Contributions are very welcome.
+This is just a fun learning project for me, so I am trying to do all the work myself.
+If you believe that there are features that I should incorporate, please do not hesitate to create a feature request.
+
 To learn more, see the `Contributor Guide`_.
 
 
@@ -88,15 +122,23 @@ please `file an issue`_ along with a detailed description.
 Credits
 -------
 
-This project was generated from `@cjolowicz`_'s `Hypermodern Python Cookiecutter`_ template.
+.. image:: https://avatars.githubusercontent.com/u/15008772?v=4
+   :target: https://github.com/vlek
+   :alt: Vlek
+   :width: 100
 
+All coding is done by `@vlek`_.
+
+This project uses `@cjolowicz`_'s `Hypermodern Python Cookiecutter`_ template.
+
+.. _@vlek: https://github.com/vlek
 .. _@cjolowicz: https://github.com/cjolowicz
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _GPL 3.0 license: https://opensource.org/licenses/GPL-3.0
 .. _PyPI: https://pypi.org/
 .. _Hypermodern Python Cookiecutter: https://github.com/cjolowicz/cookiecutter-hypermodern-python
 .. _file an issue: https://github.com/vlek/roll-cli/issues
-.. _pip: https://pip.pypa.io/
+.. _pipx: https://pypa.github.io/pipx/
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst
 .. _Usage: https://roll-cli.readthedocs.io/en/latest/usage.html
