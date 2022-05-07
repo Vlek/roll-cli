@@ -137,6 +137,9 @@ class DiceParser:
                 # Keep notation
                 (oneOf("k K"), 2, opAssoc.LEFT, DiceParser._handle_keep),
                 (oneOf("k K"), 1, opAssoc.LEFT, DiceParser._handle_keep),
+                # Drop notation
+                (oneOf("x X"), 2, opAssoc.LEFT, DiceParser._handle_drop),
+                (oneOf("x X"), 1, opAssoc.LEFT, DiceParser._handle_drop),
                 # Multiplication and division
                 (
                     oneOf("* / % //"),
@@ -236,6 +239,64 @@ class DiceParser:
             else:
                 lower_total_by = last_roll.keep_highest(float(right))
                 result.history.append(f"Keeping highest: {right}: {last_roll.rolls}")
+
+            result.total -= lower_total_by
+
+        return result
+
+    @staticmethod
+    def _handle_drop(
+        toks: list[list[int | float | EvaluationResults | str]],
+    ) -> int | float | EvaluationResults:
+        """Handle the drop notation.
+
+        This includes things like 4d6x as well as 4d6x1x2
+        """
+        tokens: list[int | float | EvaluationResults | str] = toks[0]
+
+        if not isinstance(tokens[0], EvaluationResults):
+            raise TypeError("Left value must contain a dice roll.")
+
+        # We initialize our result with the left-most value.
+        # As we perform operations, this value will be continuously
+        # updated and used as the left-hand side.
+        result: EvaluationResults = tokens[0]
+
+        # If it's the case that we have an implied keep amount, we
+        # need to manually add it to the end here.
+        if len(tokens) % 2 == 0:
+            tokens.append(1)
+
+        # Because we get things like [[1, "+", 2, "+", 3]], we have
+        # to be able to handle additional operations beyond a single
+        # left/right pair.
+        for i in range(1, len(tokens), 2):
+
+            op_index = i
+            right_index = i + 1
+
+            operation_string: str = str(tokens[op_index])
+
+            right: EvaluationResults | float | int | str = tokens[right_index]
+
+            if isinstance(right, EvaluationResults):
+                result += right
+                result.total -= right.total
+                right = right.total
+
+            last_roll: RollResults = result.rolls[-1]
+            lower_total_by: int | float = 0
+
+            if operation_string == "x":
+                lower_total_by = last_roll.keep_highest(
+                    len(last_roll.rolls) - float(right)
+                )
+                result.history.append(f"Dropping lowest: {right}: {last_roll.rolls}")
+            else:
+                lower_total_by = last_roll.keep_lowest(
+                    len(last_roll.rolls) - float(right)
+                )
+                result.history.append(f"Dropping highest: {right}: {last_roll.rolls}")
 
             result.total -= lower_total_by
 

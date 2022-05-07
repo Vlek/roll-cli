@@ -143,6 +143,38 @@ def test_keep(equation: str, range_low: int, range_high: int) -> None:
 
 
 @pytest.mark.parametrize(
+    ("equation", "range_low", "range_high"),
+    [
+        # Implied number of dice, implied number to drop
+        ("2d6x", 1, 6),
+        ("2d10x", 1, 10),
+        ("2d%x", 1, 100),
+        # Verbose dice, implied number to drop
+        ("10d6X", 9, 54),
+        ("10d9x", 9, 81),
+        # Implied number of dice, verbose number to drop
+        ("2d100X1", 1, 100),
+        ("6d1x5", 1, 1),
+        # Verbose dice, verbose drop
+        ("10d6x1", 9, 54),
+        ("4d6X3", 1, 6),
+        # Multiple drops
+        ("10d5x4x3x2", 1, 5),
+        ("10d6X5x4", 1, 6),
+        # Multiple dice rolls
+        ("4d6X1d2", 2, 12),
+        # With parens
+        ("(4+2)d100x5", 1, 100),
+        ("(4d100x2)X1", 1, 100),
+        ("(4)d(3)x((2))", 2, 6),
+    ],
+)
+def test_drop(equation: str, range_low: int, range_high: int) -> None:
+    """Test the drop notation."""
+    assert roll(equation) in range(range_low, range_high + 1)
+
+
+@pytest.mark.parametrize(
     ("equation", "exception_msg"),
     [
         # No dice given
