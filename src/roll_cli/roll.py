@@ -19,7 +19,7 @@ from .parser.types import RollOption
 
 _DICE_PARSER = DiceParser()
 
-GOOD_CHARS: str = "0123456789d-/*() %+.!^pPiIeEsSqQrRtTkKxX"
+GOOD_CHARS: str = "0123456789d-/*() %+.!^pPiIeEsSqQrRtTkKxX<>="
 
 
 def roll(

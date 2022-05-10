@@ -1,7 +1,11 @@
 """Test dice rolling expressions."""
+from typing import Union
+
 import pytest
 
 from roll_cli import roll
+from roll_cli.parser.types import EvaluationResults
+from roll_cli.parser.types import RollOption
 
 
 @pytest.mark.parametrize(
@@ -33,6 +37,22 @@ from roll_cli import roll
 def test_roll(equation: str, range_low: int, range_high: int) -> None:
     """Test basic dice rolls."""
     assert roll(equation) in range(range_low, range_high + 1)
+
+
+@pytest.mark.parametrize(
+    "equation,result",
+    [
+        ("1d20", 20),
+        ("0.5d100", 50),
+    ],
+)
+def test_max_roll(equation: str, result: int) -> None:
+    """Test to ensure that max rolls return expected values."""
+    roll_result: Union[int, float, EvaluationResults] = roll(
+        equation, roll_option=RollOption.Maximum
+    )
+    print(roll_result)
+    assert roll_result == result
 
 
 @pytest.mark.parametrize(

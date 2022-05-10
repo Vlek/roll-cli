@@ -79,7 +79,3 @@ def main(
     )
 
     click.echo(result)
-
-
-if __name__ == "__main__":
-    main(["1d20"])
