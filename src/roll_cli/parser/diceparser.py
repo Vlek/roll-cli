@@ -220,7 +220,7 @@ class DiceParser:
             elif operation_string == ">=":
                 result = result >= right_hand_side
             elif operation_string == "=":
-                result = result == right_hand_side
+                result = result.eq(right_hand_side)
 
         return result
 

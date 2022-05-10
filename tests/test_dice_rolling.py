@@ -1,4 +1,6 @@
 """Test dice rolling expressions."""
+from typing import Union
+
 import pytest
 
 from roll_cli import roll
@@ -37,11 +39,6 @@ def test_roll(equation: str, range_low: int, range_high: int) -> None:
     assert roll(equation) in range(range_low, range_high + 1)
 
 
-@pytest.mark.skip(
-    reason="""There appears to be a problem with this for now.
-    It is not actually forwarding along our RollOption value.
-    I think my hack may not be working in this case."""
-)
 @pytest.mark.parametrize(
     "equation,result",
     [
@@ -49,9 +46,11 @@ def test_roll(equation: str, range_low: int, range_high: int) -> None:
         ("0.5d100", 50),
     ],
 )
-def test_max_roll(equation: str, result: int | float) -> None:
+def test_max_roll(equation: str, result: int) -> None:
     """Test to ensure that max rolls return expected values."""
-    roll_result: int | float | EvaluationResults = roll(equation, RollOption.Maximum)
+    roll_result: Union[int, float, EvaluationResults] = roll(
+        equation, roll_option=RollOption.Maximum
+    )
     print(roll_result)
     assert roll_result == result
 

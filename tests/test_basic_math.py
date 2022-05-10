@@ -10,6 +10,8 @@ from roll_cli.roll import roll
 @pytest.mark.parametrize(
     "equation,result",
     [
+        ("--5", 5),
+        ("---13", -13),
         ("2 + 2", 4),
         ("10 + 52", 62),
         ("1 + 10 + 100 + 1000", 1111),

@@ -411,9 +411,7 @@ class EvaluationResults:
         """Add a given value to the evaluation result total."""
         right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
-        new_total: int | float | EvaluationResults = (
-            1 if self.total < right_hand_value else 0
-        )
+        new_total: int = 1 if self.total < right_hand_value else 0
 
         self.history.append(
             f"Comparing: {previous_total} < {right_hand_value}: {new_total}"
@@ -428,9 +426,7 @@ class EvaluationResults:
         """Add a given value to the evaluation result total."""
         right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
-        new_total: int | float | EvaluationResults = (
-            1 if self.total > right_hand_value else 0
-        )
+        new_total: int = 1 if self.total > right_hand_value else 0
 
         self.history.append(
             f"Comparing: {previous_total} > {right_hand_value}: {new_total}"
@@ -445,9 +441,7 @@ class EvaluationResults:
         """Add a given value to the evaluation result total."""
         right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
-        new_total: int | float | EvaluationResults = (
-            1 if self.total <= right_hand_value else 0
-        )
+        new_total: int = 1 if self.total <= right_hand_value else 0
 
         self.history.append(
             f"Comparing: {previous_total} <= {right_hand_value}: {new_total}"
@@ -462,12 +456,29 @@ class EvaluationResults:
         """Add a given value to the evaluation result total."""
         right_hand_value: int | float = self._process_right_hand_value(x)
         previous_total = self.total
-        new_total: int | float | EvaluationResults = (
-            1 if self.total >= right_hand_value else 0
-        )
+        new_total: int = 1 if self.total >= right_hand_value else 0
 
         self.history.append(
             f"Comparing: {previous_total} >= {right_hand_value}: {new_total}"
+        )
+        self.total = new_total
+
+        return self
+
+    def __bool__(self: EvaluationResults) -> bool:
+        """Returns whether the ER is truthy or falsy."""
+        return self.total > 0
+
+    def eq(
+        self: EvaluationResults, other: int | float | EvaluationResults
+    ) -> EvaluationResults:
+        """Determine whether self has the same value as the opposing object."""
+        right_hand_value: int | float = self._process_right_hand_value(other)
+        previous_total = self.total
+        new_total: int = 1 if self.total == right_hand_value else 0
+
+        self.history.append(
+            f"Comparing: {previous_total} == {right_hand_value}: {new_total}"
         )
         self.total = new_total
 

@@ -5,6 +5,7 @@ from typing import Union
 import pytest
 
 import roll_cli.parser.diceparser as dp
+from roll_cli.parser.types import EvaluationResults
 
 parser = dp.DiceParser()
 
@@ -34,12 +35,18 @@ def test_interpret_number(equation: str, result: Union[int, float]) -> None:
     [
         ("d20", 1, 20),
         ("1d20", 1, 20),
-        ("       2    d  8           ", 2, 17),
+        ("       2    d  8           ", 2, 16),
     ],
 )
 def test_interpret_dice(equation: str, range_low: int, range_high: int) -> None:
     """Test that dice parsing is functioning correctly."""
-    assert parser.evaluate(equation) in range(range_low, range_high + 1)
+    evaluation_results: Union[int, float, EvaluationResults] = parser.evaluate(equation)
+    if isinstance(evaluation_results, EvaluationResults):
+        result: Union[int, float] = evaluation_results.total
+    else:
+        result = evaluation_results
+
+    assert result in range(range_low, range_high + 1)
 
 
 def test_interpret_subtract_negative() -> None:

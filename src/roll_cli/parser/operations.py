@@ -26,8 +26,6 @@ from .types import EvaluationResults
 from .types import RollOption
 from .types import RollResults
 
-ROLL_TYPE: RollOption = RollOption.Normal
-
 
 def _to_eval_results(x: int | float | EvaluationResults) -> EvaluationResults:
     """Change given object to an EvaluationResults object."""
