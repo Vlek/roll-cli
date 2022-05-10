@@ -149,6 +149,8 @@ class DiceParser:
                 ),
                 # Addition and subtraction
                 (oneOf("+ -"), 2, opAssoc.LEFT, DiceParser._handle_standard_operation),
+                # Comparisons
+                (oneOf("< > = <= >="), 2, opAssoc.RIGHT, DiceParser._handle_comparison),
                 # TODO: Use this to make a pretty exception message
                 # where we point out and explain the issue.
             ],
@@ -184,6 +186,43 @@ class DiceParser:
         toks: list[list[int | float | EvaluationResults]],
     ) -> int | float | EvaluationResults:
         return factorial(toks[0][0])
+
+    @staticmethod
+    def _handle_comparison(
+        toks: list[list[int | float | EvaluationResults]],
+    ) -> int | float | EvaluationResults:
+        """Handle comparison operators."""
+        left_hand_side: int | float | EvaluationResults | str = toks[0][0]
+
+        if isinstance(left_hand_side, str):
+            left_hand_side = float(left_hand_side)
+
+        result: EvaluationResults = EvaluationResults(left_hand_side)
+
+        # Because we get things like [[1, "+", 2, "+", 3]], we have
+        # to be able to handle additional operations beyond a single
+        # left/right pair.
+        for pair in range(1, len(toks[0]), 2):
+
+            right_hand_side: int | float | EvaluationResults | str = toks[0][pair + 1]
+
+            if isinstance(right_hand_side, str):
+                right_hand_side = float(right_hand_side)
+
+            operation_string: str = str(toks[0][pair])
+
+            if operation_string == ">":
+                result = result > right_hand_side
+            elif operation_string == "<":
+                result = result < right_hand_side
+            elif operation_string == "<=":
+                result = result <= right_hand_side
+            elif operation_string == ">=":
+                result = result >= right_hand_side
+            elif operation_string == "=":
+                result = result == right_hand_side
+
+        return result
 
     @staticmethod
     def _handle_roll(

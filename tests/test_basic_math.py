@@ -6,8 +6,6 @@ import pytest
 
 from roll_cli.roll import roll
 
-# from roll_cli.roll import roll
-
 
 @pytest.mark.parametrize(
     "equation,result",
@@ -236,4 +234,34 @@ def test_constants(equation: str, result: Union[int, float]) -> None:
 )
 def test_sqrt(equation: str, result: Union[int, float]) -> None:
     """Test the squareroot operator."""
+    assert roll(equation) == result
+
+
+@pytest.mark.parametrize(
+    "equation,result",
+    [
+        # Equal to
+        ("1=1", 1),
+        ("0=0", 1),
+        ("5=3.0", 0),
+        # Less than
+        ("1<5", 1),
+        ("4<5", 1),
+        ("9.999<10", 1),
+        ("100<-100", 0),
+        # Greater than
+        ("1>10", 0),
+        ("10>0", 1),
+        # Less than or equal to
+        ("1<=1", 1),
+        ("2<=99", 1),
+        ("100<=50", 0),
+        # Greater than or equal to
+        ("100000>=23.25", 1),
+        ("1>=1", 1),
+        ("37>=50", 0),
+    ],
+)
+def test_comparison_ops(equation: str, result: Union[int, float]) -> None:
+    """Testing comparison operators."""
     assert roll(equation) == result
