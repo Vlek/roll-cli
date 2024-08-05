@@ -122,7 +122,7 @@ class DiceParser:
                 (
                     CaselessLiteral("d"),
                     2,
-                    opAssoc.RIGHT,
+                    opAssoc.LEFT,
                     lambda toks: DiceParser._handle_roll(toks[0][0], toks[0][2]),
                 ),
                 # This line causes the recursion debug to go off.
